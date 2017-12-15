@@ -1,8 +1,11 @@
 const botAuth = require('./private/botAuth.js');
 const fs = require('fs');
 
-// let channel_list;
-const channel_list = fs.readFileSync('./private/channels.txt', 'utf8');
+try {
+    const channel_list = fs.readFileSync('./private/channels.txt', 'utf8');
+} catch (e) {
+    console.log('File error: ' + e);
+}
 
 const options = {
     options: {
@@ -10,15 +13,13 @@ const options = {
         debug: true
     },
     connection: {
-        reconnect: true
+        reconnect: true,
+        secure: true
     },
+    channels: ['habbe'],
     identity: {
-        username: botAuth.username,
-        password: botAuth.password
-    },
-    channels: ['#' + channel_list],
-    logger: {
-
+        username: botAuth.auth.username,
+        password: botAuth.auth.password
     }
 }
 
