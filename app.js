@@ -32,13 +32,14 @@ client.on('chat', (channel, userstate, message, self) => {
     if (split_msg[0] === '!wr') {
         const game_info = commands.get_wr(info_object)
         .then(res => {
-            console.log(res);
+            // console.log(res);
             client.say(
                 channel, res.category +
                 ' WR: ' + res.time + ' by ' + res.player +
                 ' ' + res.days_ago + ' days ago')
-        }).catch(err => {
-            client.say(channel, 'Cannot find run')
+        })
+        .catch(err => {
+            // client.say(channel, 'Cannot find run')
             console.log(err);
         });
 
