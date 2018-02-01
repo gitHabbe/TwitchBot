@@ -1,11 +1,11 @@
 const fs = require('fs');
-const fetch_wr = require('./fetch_speedrun/fetch_wr.js');
+const fetch_wr = require('./fetch_wr.js');
 
 // const check_game_id = (channel, msg_game, msg_category) => {
 const check_game_id = (info_object) => {
     let { channel, userstate, message, msg_game, msg_category } = info_object;
     let found_game = false;
-    const game_id_string = fs.readFileSync('./bot_commands/fetch_speedrun/game_id_list.txt', 'utf8');
+    const game_id_string = fs.readFileSync('./tools/game_id_list.txt', 'utf8');
     const game_id_list = game_id_string.slice(0, -1).split('\n');
 
     var game_id_array = [];

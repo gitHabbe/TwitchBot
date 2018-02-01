@@ -1,5 +1,5 @@
 const fs = require('fs');
-const botAuth = require('./private/botAuth.js');
+const botAuth = require('../private/botAuth.js');
 
 let channel_list = [];
 try {
