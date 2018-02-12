@@ -19,29 +19,34 @@ client.on('connected', (address, port) => {
 
 client.on('chat', (channel, userstate, message, self) => {
 
+    const split_msg = message.split(' ');
     let info_object = {
         channel: channel.slice(1),
         userstate: userstate,
         message: message,
+        split_msg: split_msg,
         self: self
-    }
-
+    };
     if (self) return;
 
-    const split_msg = message.split(' ');
     switch (split_msg[0]) {
         case '!wr':
-            const game_info = commands.get_wr(info_object)
-            .then(res => {
-                client.say(
-                    channel, res.category +
-                    ' WR: ' + res.time + ' by ' + res.player +
-                    ' ' + res.days_ago + ' days ago')
-                })
-            .catch(err => {
-                client.say(channel, 'Cannot find run')
-                console.log(err);
-            });
+            commands.get_wr(info_object)
+            .then(res => { client.say(channel, res) }).catch(err => { console.log('wr err') });
+            break;
+        case '!pb':
+            commands.get_pb(info_object)
+            .then(res => { client.say(channel, res) }).catch(err => { console.log('pb err') });
+            break;
+        case '!newcmd':
+            commands.new_cc(info_object)
+            .then(res => { client.say(channel, res) })
+            .catch(err => { console.log('New CC err') })
+            break;
+        case '!delcmd':
+            commands.delete_cc(info_object)
+            .then(res => { client.say(channel, res) })
+            .catch(err => { console.log('Delete CC err') })
             break;
         case '!uptime':
             const uptime = commands.get_uptime(info_object)
@@ -64,7 +69,9 @@ client.on('chat', (channel, userstate, message, self) => {
             });
             break;
         case '!hl':
-            const highlight = commands.set_highlight(info_object);
+            commands.set_highlight(info_object)
+            .then(res => { client.say(channel, res) })
+            .catch(err => { console.log('HL err') })
             break;
         case '!hls':
             const highlight_list = commands.get_highlights(info_object)
@@ -101,6 +108,12 @@ client.on('chat', (channel, userstate, message, self) => {
                 client.say(channel, 'Cannot find followage');
             });
 
+            break;
+        case '!editor':
+            client.say(channel, 'https://atom.io/')
+            break;
+        case '!gucci':
+            client.say(channel, 'Eleesuh is one GUCCI gurl!')
             break;
         case '!slots':
             var emotes = ['Kappa','Jebaited','MingLee','DansGame','PogChamp', 'Kreygasm']

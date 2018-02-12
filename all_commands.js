@@ -1,35 +1,91 @@
 const low = require('lowdb')
 const FileSync = require('lowdb/adapters/FileSync')
 const fetching = require('./tools/fetching.js');
-const check_id = require('./tools/check_id.js');
 const util = require('./tools/util.js');
+const tg = require('./tools/title_category.js');
+const wr = require('./tools/fetch_wr.js');
+const pb = require('./tools/fetch_pb.js');
 
-const get_wr = (info_object) => {
+const get_wr = async (info_object) => {
+    let { channel, userstate, message, split_msg } = info_object;
+    // info_object.channel = 'Wilko'
+    const game_id_and_category = await tg.set_game_and_category(info_object);
+    info_object.game_id = game_id_and_category.game_id;
+    info_object.category_id = game_id_and_category.category_id
+    info_object.fuse_hit = game_id_and_category.fuse_hit;
+    const test = wr.fetch_wr(info_object);
 
-    let { channel, userstate, message } = info_object;
+    return test
+};
 
-    const split_msg = message.split(' ');
-
-    const msg_game = split_msg.length > 1 && split_msg[1];
-    const msg_category = split_msg.length > 2 && split_msg[2];
-
-    if (msg_game && msg_category) {
-        info_object.msg_game = msg_game;
-        info_object.msg_category = msg_category;
-        return check_id.check_game_id(info_object);
-    } else if (msg_game) {
-        info_object.msg_game = msg_game;
-        return check_id.check_game_id(info_object);
-    } else if (msg_category) {
-        info_object.msg_category = msg_category;
-        return check_id.check_game_id(info_object);
+const get_pb = async (info_object) => {
+    let { channel, userstate, message, split_msg } = info_object;
+    console.log(info_object.split_msg);
+    // info_object.channel = 'Fuzzyness'
+    if (split_msg.length === 1) {
+        console.log('IF');
+        info_object.runner = channel;
     } else {
-        console.log('No game specified, grabbing title');
-        return check_id.check_game_id(info_object);
+        console.log('ELSE');
+        info_object.channel = info_object.split_msg[1];
+        info_object.split_msg.splice(1, 1)
+    }
+    console.log(info_object.split_msg);
+    const game_id_and_category = await tg.set_game_and_category(info_object);
+    info_object.game_id = game_id_and_category.game_id;
+    info_object.category_id = game_id_and_category.category_id
+    info_object.fuse_hit = game_id_and_category.fuse_hit;
+    console.log(info_object.game_id, info_object.category_id, info_object.fuse_hit);
+    const test = pb.fetch_pb(info_object)
+
+    return test
+};
+
+const new_cc = async (info_object) => {
+    let { channel, message, userstate, split_msg } = info_object;
+    const adapter = new FileSync('custom_commands.json');
+    const db = low(adapter);
+
+    const cmd_text = split_msg.slice(2).join(' ')
+
+    if (!db.has(channel).value()) {
+        db.set(channel, []).write()
+    }
+    if (!split_msg[1]) {
+        return 'No command-name found'
+    }
+    else if (cmd_text === '') {
+        return 'No text to command found'
+    }
+    if (!db.get(channel).find({cmd_name: split_msg[1]}).value()) {
+        db.get(channel).push({
+            streamer: channel,
+            cmd_name: split_msg[1],
+            cmd_text: cmd_text,
+            date: new Date(),
+            made_by: userstate.username
+        }).write()
+        return `Command created: ${split_msg[1]}`
+    } else {
+        return 'Command already exists'
+    }
+
+};
+
+const delete_cc = async (info_object) => {
+    let { channel, message, userstate, split_msg } = info_object;
+    const adapter = new FileSync('custom_commands.json');
+    const db = low(adapter);
+
+    if (db.get(channel).find({ cmd_name: split_msg[1] }).value()) {
+        db.get(channel).remove({ cmd_name: split_msg[1] }).write()
+        return `Command ${split_msg[1]} removed`
+    } else {
+        return 'Cannot find command'
     }
 };
 
-async function get_uptime(info_object) {
+const get_uptime = async (info_object) => {
     let { channel, message } = info_object;
     const twitch_channel = await fetching.get_twitch_channel(channel);
     const uptime_date = new Date(twitch_channel.data.data[0].started_at);
@@ -41,14 +97,14 @@ async function get_uptime(info_object) {
     // console.log(twitch_channel.data.data);
 };
 
-async function get_title(info_object) {
+const get_title = async (info_object) => {
     let { channel, message } = info_object;
     const twitch_channel = await fetching.get_twitch_channel(channel);
     console.log(twitch_channel.data.data[0].title);
     return twitch_channel.data.data[0].title
 }
 
-async function set_highlight(info_object) {
+const set_highlight = async (info_object) => {
     let { channel, message, userstate } = info_object;
     const adapter = new FileSync('highlights.json')
     const db = low(adapter)
@@ -65,20 +121,24 @@ async function set_highlight(info_object) {
     if (!db.has(channel).value()) {
         db.set(channel, []).write()
     }
-
-    db.get(channel).push({
-        streamer: channel,
-        hl_name: message.slice(4),
-        timestamp: seconds_ago,
-        date: new Date(),
-        hl_id: highlight_id,
-        hl_url: highlight_url,
-        made_by: userstate.username
-    }).write()
+    if (!db.get(channel).find({hl_name: message.slice(4)}).value()) {
+        db.get(channel).push({
+            streamer: channel,
+            hl_name: message.slice(4),
+            timestamp: seconds_ago,
+            date: new Date(),
+            hl_id: highlight_id,
+            hl_url: highlight_url,
+            made_by: userstate.username
+        }).write()
+        return `Highlight created: ${message.slice(4)}`
+    } else {
+        return 'Highlight already exists'
+    }
 
 }
 
-async function get_highlights(info_object) {
+const get_highlights = async (info_object) => {
     let { channel, message, userstate } = info_object;
     const adapter = new FileSync('highlights.json');
     const db = low(adapter);
@@ -87,7 +147,7 @@ async function get_highlights(info_object) {
     return all_states[channel].map(hl => hl.hl_name)
 }
 
-async function get_target_highlight(info_object) {
+const get_target_highlight = async (info_object) => {
     let { channel, message, userstate } = info_object;
     const adapter = new FileSync('highlights.json');
     const db = low(adapter);
@@ -99,7 +159,7 @@ async function get_target_highlight(info_object) {
 
 }
 
-async function delete_highlight(info_object) {
+const delete_highlight = async (info_object) => {
     let { channel, message, userstate } = info_object;
     const target_highlight = message.slice(5)
     const adapter = new FileSync('highlights.json');
@@ -113,7 +173,7 @@ async function delete_highlight(info_object) {
     console.log('removed: ' + target_highlight);
 }
 
-async function get_followage(info_object) {
+const get_followage = async (info_object) => {
     let { channel, message, userstate } = info_object;
     const streamer = await fetching.get_twitch_channel(channel);
     const streamer_id = streamer.data.data[0].user_id;
@@ -128,11 +188,14 @@ async function get_followage(info_object) {
 
 module.exports = {
     get_wr: get_wr,
+    get_pb: get_pb,
     get_uptime:get_uptime,
     get_title: get_title,
     set_highlight: set_highlight,
     get_highlights: get_highlights,
     get_target_highlight: get_target_highlight,
     delete_highlight: delete_highlight,
-    get_followage:get_followage
+    get_followage:get_followage,
+    new_cc: new_cc,
+    delete_cc: delete_cc
 };

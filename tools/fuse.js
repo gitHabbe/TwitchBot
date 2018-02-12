@@ -1,7 +1,18 @@
 const Fuse = require('fuse.js');
 
 const set_fuse_list = (game_list) => {
-    return game_list.map(game =>  ({ 'category': game.name }))
+    return game_list.filter(game => {
+        // console.log(game.links);
+        if (game.links.find(link => link.rel === 'leaderboard')) {
+            return game
+        }
+    }).map(game => {
+        // console.log(game.links);
+        return {
+            'category': game.name,
+            'category_id': game.id
+        }
+    })
 };
 
 const get_fuse_result = (fuse_list, title) => {
@@ -12,12 +23,9 @@ const get_fuse_result = (fuse_list, title) => {
         minMatchCharLength: 1,
         keys: ['category']
     }
-    var fuse = new Fuse(fuse_list, options)
     // console.log(fuse_list);
-    // console.log(title);
-    const fuse_search = fuse.search(title)
-    // console.log(fuse_search);
-    return fuse_search
+    var fuse = new Fuse(fuse_list, options)
+    return fuse.search(title)[0]
 };
 
 module.exports = {
