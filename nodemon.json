@@ -1,4 +1,4 @@
 {
   "verbose": true,
-  "ignore": ["custom_commands.json", "highlights.json", "game_id_list.json"]
+  "ignore": ["custom_commands.json", "highlights.json", "game_id_list.json", "permission.json"]
 }

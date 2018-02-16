@@ -37,8 +37,7 @@ const get_game_id = async (info_object) => {
 
 const get_category = async (info_object) => {
     let { channel, userstate, message, split_msg } = info_object;
-    const msg_category = split_msg.length > 2 && split_msg[2];
-
+    let msg_category = split_msg.length > 2 && split_msg[2];
     const game_id = await get_game_id(info_object)
     const speedrun_game = await fetching.get_speedrungame_by_id(game_id)
     const category_uri = util.get_game_link(speedrun_game.data.data, 'categories')
@@ -47,6 +46,7 @@ const get_category = async (info_object) => {
     // console.log(fuse_list);
     let fuse_shit;
     if (msg_category) {
+        msg_category = split_msg.slice(1).join(' ')
         fuse_hit = fuse.get_fuse_result(fuse_list, msg_category)
     } else {
         const twitch_channel = await fetching.get_twitch_channel(channel);

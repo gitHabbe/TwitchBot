@@ -32,7 +32,8 @@ client.on('chat', (channel, userstate, message, self) => {
     switch (split_msg[0]) {
         case '!wr':
             commands.get_wr(info_object)
-            .then(res => { client.say(channel, res) }).catch(err => { console.log('wr err') });
+            .then(res => { client.say(channel, res) })
+            .catch(err => { console.log('wr err') });
             break;
         case '!pb':
             commands.get_pb(info_object)
@@ -49,24 +50,14 @@ client.on('chat', (channel, userstate, message, self) => {
             .catch(err => { console.log('Delete CC err') })
             break;
         case '!uptime':
-            const uptime = commands.get_uptime(info_object)
-            .then(res => {
-                console.log(res);
-                client.say(channel, res)
-
-            }).catch(err => {
-                client.say(channel,
-                    info_object.channel + ' is not online');
-                console.log(err);
-            });
+            commands.get_uptime(info_object)
+            .then(res => { client.say(channel, res) })
+            .catch(err => { client.say(channel, info_object.channel + ' is not online') });
             break;
         case '!title':
-            const title = commands.get_title(info_object)
-            .then(res => {
-                client.say(channel, res)
-            }).catch(err => {
-                console.log(err);
-            });
+            commands.get_title(info_object)
+            .then(res => { client.say(channel, res) })
+            .catch(err => { console.log(err) });
             break;
         case '!hl':
             commands.set_highlight(info_object)
@@ -74,43 +65,29 @@ client.on('chat', (channel, userstate, message, self) => {
             .catch(err => { console.log('HL err') })
             break;
         case '!hls':
-            const highlight_list = commands.get_highlights(info_object)
-            .then(res => {
-                console.log(res);
-                client.say(channel, 'Highlights: ' + res.join(', '))
-            }).catch(err => {
-                console.log(err)
-            });
+            commands.get_highlights(info_object)
+            .then(res => { client.say(channel, 'Highlights: ' + res.join(', ')) })
+            .catch(err => { console.log(err) });
             break;
         case '!gethl':
-            const target_highlight = commands.get_target_highlight(info_object)
-            .then(res => {
-                client.say(channel, res.hl_name + ', ' + res.hl_url + '?t=' + (res.timestamp-40) + 's')
-            }).catch(err => {
-                client.say(channel, 'Cannot find highlight')
-            });
-            console.log(target_highlight);
+            commands.get_target_highlight(info_object)
+            .then(res => { client.say(channel, res.hl_name + ', ' + res.hl_url + '?t=' + (res.timestamp - 150) + 's') })
+            .catch(err => { client.say(channel, 'Cannot find highlight') });
+            // console.log(target_highlight);
             break;
         case '!dhl':
-            const deleted_highlight = commands.delete_highlight(info_object)
-            .then(res => {
-                console.log(res)
-            }).catch(err => {
-                console.log(err)
-            });
+            commands.delete_highlight(info_object)
+            .then(res => { console.log(res) })
+            .catch(err => { console.log(err) });
             break;
         case '!followage':
-            const followage = commands.get_followage(info_object)
-            .then(res => {
-                // console.log(res);
-                client.say(channel, userstate['display-name'] + ' followage: ' + res + ' days')
-            }).catch(err => {
-                client.say(channel, 'Cannot find followage');
-            });
-
+            commands.get_followage(info_object)
+            .then(res => { client.say(channel, userstate['display-name'] + ' followage: ' + res + ' days') })
+            .catch(err => { client.say(channel, 'Cannot find followage') });
             break;
         case '!editor':
-            client.say(channel, 'https://atom.io/')
+            // client.say(channel, 'https://atom.io/')
+            client.say(channel, 'https://code.visualstudio.com/')
             break;
         case '!gucci':
             client.say(channel, 'Eleesuh is one GUCCI gurl!')
@@ -130,8 +107,26 @@ client.on('chat', (channel, userstate, message, self) => {
             }
             client.say('habbe', sentence.slice(0,-2))
             break;
-        default:
-            // console.log('DEFAULT');
+        case '!addperm':
+            commands.add_permission(info_object)
+            .then(res => { client.say(channel, res) }).catch(err => { console.log(err) })
             break;
+        case '!getperm':
+            commands.list_permission(info_object, true)
+            .then(res => { client.say(channel, res.names_string) }).catch(err => { console.log(err) })
+        default:
+        // console.log('DEFAULT');
+            break;
+    }
+    if (message.indexOf('https://www.youtube.com') >= 0) {
+        commands.get_youtube_info(info_object)
+        .then(res => { client.say(channel, res) }).catch(err => { console.log(err) })
+    } else if (message.indexOf('https://youtu.be') >= 0) {
+        commands.get_youtube_info(info_object, true)
+        .then(res => { client.say(channel, res) }).catch(err => { console.log(err) })
+    } else if (message.indexOf('twitter.com/') >= 0) {
+        console.log('twitter')
+        commands.get_tweet_info(info_object)
+        .then(res => { client.say(channel, res) }).catch(err => { console.log(err) })
     }
 })
