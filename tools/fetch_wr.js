@@ -3,12 +3,12 @@ const fetching = require('./fetching.js');
 
 async function fetch_wr(info_object) {
     let { channel, userstate, message, split_msg, game_id, category_id, fuse_hit, speedrun_game } = info_object;
-    
+    // console.log('fetching wr')
     const speedrun = await fetching.get_leaderboard(game_id, category_id, true);
-    // console.log(speedrun);
+    // console.log(speedrun.data);
     const speedrunner = await fetching.fetch_speedrun_uri(speedrun.data.data.runs[0].run.players[0].uri);
     // console.log(speedrunner.data.data);
-    const wr_time = util.secondsToString(speedrun.data.data.runs[0].run.times.primary_t);
+    const wr_time = util.secondsToString2(speedrun.data.data.runs[0].run.times.primary_t);
     const days_ago = Math.floor((new Date() - new Date(speedrun.data.data.runs[0].run.date)) / 86400000)
     return `${fuse_hit.category} WR: ${wr_time} \
 by ${speedrunner.data.data.names.international} \

@@ -1,5 +1,4 @@
 const fs = require('fs');
-const botAuth = require('../private/botAuth.js');
 
 let channel_list = [];
 try {
@@ -12,7 +11,7 @@ try {
 
 const options = {
     options: {
-        clientId: botAuth.clientID,
+        clientId: process.env.TMI_CLIENT_ID,
         debug: true
     },
     connection: {
@@ -21,8 +20,8 @@ const options = {
     },
     channels: channel_list,
     identity: {
-        username: botAuth.auth.username,
-        password: botAuth.auth.password
+        username: process.env.TMI_USERNAME,
+        password: process.env.TMI_PASSWORD
     }
 }
 

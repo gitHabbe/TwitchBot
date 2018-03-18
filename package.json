@@ -17,6 +17,7 @@
     "twitter": "^1.7.1"
   },
   "devDependencies": {
-    "babel-core": "^6.26.0"
+    "babel-core": "^6.26.0",
+    "dotenv": "^5.0.0"
   }
 }

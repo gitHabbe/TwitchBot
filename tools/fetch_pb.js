@@ -9,7 +9,7 @@ async function fetch_pb(info_object) {
     const pbs_uri = util.get_game_link(speedrunner, 'personal-bests');
     const speedrunners_pbs = await fetching.fetch_speedrun_uri(pbs_uri);
     const the_run = speedrunners_pbs.data.data.find(sub => sub.run.category === category_id);
-    const pb_time = util.secondsToString(the_run.run.times.primary_t);
+    const pb_time = util.secondsToString2(the_run.run.times.primary_t);
     const days_ago = Math.floor((new Date() - new Date(the_run.run.date)) / 86400000)
 
     return `${channel}'s ${fuse_hit.category} PB: ${pb_time}, ${days_ago} days ago`

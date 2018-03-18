@@ -1,5 +1,7 @@
+require('dotenv').load();
 const tmi = require('tmi.js');
 const commands = require('./all_commands.js');
+const tc = require('./tools/title_category')
 const options = require('./tools/options.js');
 
 var client = new tmi.client(options.options);
@@ -39,6 +41,7 @@ client.on('chat', (channel, userstate, message, self) => {
             commands.get_pb(info_object)
             .then(res => { client.say(channel, res) }).catch(err => { console.log('pb err') });
             break;
+        case '!addcmd':
         case '!newcmd':
             commands.new_cc(info_object)
             .then(res => { client.say(channel, res) })
@@ -66,7 +69,7 @@ client.on('chat', (channel, userstate, message, self) => {
             break;
         case '!hls':
             commands.get_highlights(info_object)
-            .then(res => { client.say(channel, 'Highlights: ' + res.join(', ')) })
+            .then(res => { client.say(channel, res) })
             .catch(err => { console.log(err) });
             break;
         case '!gethl':
@@ -77,20 +80,13 @@ client.on('chat', (channel, userstate, message, self) => {
             break;
         case '!dhl':
             commands.delete_highlight(info_object)
-            .then(res => { console.log(res) })
+            .then(res => { client.say(channel, res) })
             .catch(err => { console.log(err) });
             break;
         case '!followage':
             commands.get_followage(info_object)
             .then(res => { client.say(channel, userstate['display-name'] + ' followage: ' + res + ' days') })
             .catch(err => { client.say(channel, 'Cannot find followage') });
-            break;
-        case '!editor':
-            // client.say(channel, 'https://atom.io/')
-            client.say(channel, 'https://code.visualstudio.com/')
-            break;
-        case '!gucci':
-            client.say(channel, 'Eleesuh is one GUCCI gurl!')
             break;
         case '!slots':
             var emotes = ['Kappa','Jebaited','MingLee','DansGame','PogChamp', 'Kreygasm']
@@ -114,6 +110,12 @@ client.on('chat', (channel, userstate, message, self) => {
         case '!getperm':
             commands.list_permission(info_object, true)
             .then(res => { client.say(channel, res.names_string) }).catch(err => { console.log(err) })
+            break;
+        case '!time':
+            client.say(channel, 'Doesnt work yet')
+            // commands.get_timezone(info_object)
+            // .then(res => { client.say(channel, res) }).catch(err => { console.log(err) })
+            break;
         default:
         // console.log('DEFAULT');
             break;

@@ -1,22 +1,24 @@
-const low = require('lowdb')
+const low = require('lowdb');
 const axios = require('axios');
-const FileSync = require('lowdb/adapters/FileSync')
+const FileSync = require('lowdb/adapters/FileSync');
 const fetching = require('./tools/fetching.js');
 const util = require('./tools/util.js');
 const tg = require('./tools/title_category.js');
 const wr = require('./tools/fetch_wr.js');
 const pb = require('./tools/fetch_pb.js');
-const auth = require('./private/botAuth.js');
 const Twitter = require('twitter');
 
 const get_wr = async (info_object) => {
     let { channel, userstate, message, split_msg } = info_object;
     // info_object.channel = 'Wilko'
     const game_id_and_category = await tg.set_game_and_category(info_object);
-    info_object.game_id = game_id_and_category.game_id;
-    info_object.category_id = game_id_and_category.category_id
     info_object.fuse_hit = game_id_and_category.fuse_hit;
-    const test = wr.fetch_wr(info_object);
+    console.log('info_object.fuse_hit: ', info_object.fuse_hit);
+    info_object.game_id = game_id_and_category.game_id;
+    console.log('info_object.game_id: ', info_object.game_id);
+    info_object.category_id = game_id_and_category.category_id
+    console.log('info_object.category_id: ', info_object.category_id);
+    const test = wr.fetch_wr(info_object)
 
     return test
 };
@@ -47,36 +49,32 @@ const get_pb = async (info_object) => {
 const new_cc = async (info_object) => {
     let { channel, message, userstate, split_msg } = info_object;
     const permission = await get_permission(info_object);
-    if (!permission) {
-        return 'Permission denied'
-    }
-    const adapter = new FileSync('custom_commands.json');
+    if (!permission) return 'Permission denied';
+
+    const adapter = new FileSync('./private/database.json');
     const db = low(adapter);
 
     const cmd_text = split_msg.slice(2).join(' ')
 
-    if (!db.has(channel).value()) {
-        db.set(channel, []).write()
-    }
-    if (!split_msg[1]) {
-        return 'No command-name found'
-    }
-    else if (cmd_text === '') {
-        return 'No text to command found'
-    }
-    if (!db.get(channel).find({cmd_name: split_msg[1]}).value()) {
-        db.get(channel).push({
-            streamer: channel,
+    if (db.get('reserved-words').value().find(reserved_cmd => reserved_cmd === split_msg[1])) return 'Command-name reserved';
+    if (!split_msg[1]) return 'No command-name specified';
+    else if (cmd_text === '') return 'No text to command specified';
+
+    if (!db.has(channel).value()) db.set(channel, {}).write()
+    if (!db.has(channel + '.cc').value()) db.set(channel + '.cc', []).write()
+
+
+    if (!db.get(channel + '.cc').find({cmd_name: split_msg[1]}).value()) {
+        db.get(channel + '.cc').push({
             cmd_name: split_msg[1],
             cmd_text: cmd_text,
-            date: new Date(),
-            made_by: userstate.username
+            made_by: userstate.username,
+            date: new Date()
         }).write()
-        return `Command created: ${split_msg[1]}`
+        return 'Command created: ' + split_msg[1]
     } else {
         return 'Command already exists'
     }
-
 };
 
 const delete_cc = async (info_object) => {
@@ -84,11 +82,11 @@ const delete_cc = async (info_object) => {
     const permission = await get_permission(info_object);
     if (!permission) return 'Permission denied'
 
-    const adapter = new FileSync('custom_commands.json');
+    const adapter = new FileSync('./private/database.json');
     const db = low(adapter);
 
-    if (db.get(channel).find({ cmd_name: split_msg[1] }).value()) {
-        db.get(channel).remove({ cmd_name: split_msg[1] }).write()
+    if (db.get(channel + '.cc').find({ cmd_name: split_msg[1] }).value()) {
+        db.get(channel + '.cc').remove({ cmd_name: split_msg[1] }).write()
         return `Command ${split_msg[1]} removed`
     } else {
         return 'Cannot find command'
@@ -115,14 +113,13 @@ const get_title = async (info_object) => {
 };
 
 const set_highlight = async (info_object) => {
-    let { channel, message, userstate } = info_object;
+    let { channel, message, userstate, split_msg } = info_object;
     const permission = await get_permission(info_object);
     if (!permission) return 'Permission denied'
 
-    const adapter = new FileSync('highlights.json')
+    const adapter = new FileSync('./private/database.json')
     const db = low(adapter)
     // channel = 'Wilko'
-    const split_msg = message.split(' ');
     const twitch_channel = await fetching.get_twitch_channel(channel);
     const user_video_list = await fetching.get_twitch_videos(twitch_channel.data.data[0].user_id);
     const highlight_id = user_video_list.data.data[0].id;
@@ -130,18 +127,17 @@ const set_highlight = async (info_object) => {
     const uptime_date = new Date(twitch_channel.data.data[0].started_at);
     const seconds_ago = Math.floor(((new Date() - uptime_date) / 1000));
 
-    if (!db.has(channel).value()) {
-        db.set(channel, []).write()
-    }
-    if (!db.get(channel).find({hl_name: message.slice(4)}).value()) {
-        db.get(channel).push({
-            streamer: channel,
+    if (!db.has(channel).value()) db.set(channel, []).write()
+    if (!db.has(channel + '.highlights').value()) db.set(channel + '.highlights', []).write()
+
+    if (!db.get(channel + '.highlights').find({hl_name: message.slice(4)}).value()) {
+        db.get(channel + '.highlights').push({
             hl_name: message.slice(4),
-            timestamp: seconds_ago,
-            date: new Date(),
-            hl_id: highlight_id,
             hl_url: highlight_url,
-            made_by: userstate.username
+            made_by: userstate.username,
+            timestamp: seconds_ago,
+            hl_id: highlight_id,
+            date: new Date()
         }).write()
         return `Highlight created: ${message.slice(4)}`
     } else {
@@ -152,20 +148,25 @@ const set_highlight = async (info_object) => {
 
 const get_highlights = async (info_object) => {
     let { channel, message, userstate } = info_object;
-    const adapter = new FileSync('highlights.json');
+    const adapter = new FileSync('./private/database.json');
     const db = low(adapter);
     const all_states = db.getState()
-
-    return all_states[channel].map(hl => hl.hl_name)
+    // console.log(all_states[channel])
+    // console.log(all_states[channel].highlights)
+    if (all_states[channel].highlights &&
+        all_states[channel].highlights.length != 0) {
+        return 'Highlights: ' + all_states[channel].highlights.map(hl => hl.hl_name).join(', ')
+    }
+    return 'Streamer has no highlights'
 };
 
 const get_target_highlight = async (info_object) => {
     let { channel, message, userstate } = info_object;
-    const adapter = new FileSync('highlights.json');
+    const adapter = new FileSync('./private/database.json');
     const db = low(adapter);
     const target_highlight = message.slice(7);
     const all_states = db.getState()
-    const highlight_hit = all_states[channel].find(hl => hl.hl_name === target_highlight);
+    const highlight_hit = all_states[channel].highlights.find(hl => hl.hl_name === target_highlight);
 
     return highlight_hit
 
@@ -177,15 +178,20 @@ const delete_highlight = async (info_object) => {
     if (!permission) return 'Permission denied'
 
     const target_highlight = message.slice(5)
-    const adapter = new FileSync('highlights.json');
+    const adapter = new FileSync('./private/database.json');
     const db = low(adapter);
+
     if (target_highlight === 'all') {
-        db.get(channel).remove().write()
+        db.get(channel + '.highlights').remove().write()
+        return 'All highlights deleted.'
     }
-    db.get(channel)
-    .remove({ hl_name: target_highlight })
-    .write()
-    console.log('removed: ' + target_highlight);
+    if (db.get(channel + '.highlights').value().findIndex(hl => hl.hl_name === target_highlight) != -1) {
+        db.get(channel + '.highlights')
+        .remove({ hl_name: target_highlight })
+        .write()
+        return 'Highlight ' + target_highlight + ' has been removed.'
+    }
+    return 'Highlight not found.'
 };
 
 const get_followage = async (info_object) => {
@@ -215,7 +221,7 @@ const get_youtube_info = async (info_object, short = false) => {
         yt_link = split_msg.find(word => word.indexOf('https://www.youtube.com') !== -1)
     }
     const yt_id = re.exec(yt_link)[1]
-    const yt_video = await axios.get(`https://www.googleapis.com/youtube/v3/videos?id=${yt_id}&key=${auth.ytauth.apikey}
+    const yt_video = await axios.get(`https://www.googleapis.com/youtube/v3/videos?id=${yt_id}&key=${process.env.YT_API_KEY}
         &part=snippet,contentDetails,statistics,status`)
     const {viewCount, likeCount, dislikeCount} = yt_video.data.items[0].statistics;
     const likePercent = Math.round((parseInt(likeCount) / (parseInt(likeCount) + parseInt(dislikeCount))) * 100)
@@ -243,10 +249,10 @@ const get_youtube_info = async (info_object, short = false) => {
 const get_tweet_info = async (info_object) => {
     let { channel, message, userstate, split_msg } = info_object;
     var client = new Twitter({
-        consumer_key: auth.twauth.apikey,
-        consumer_secret: auth.twauth.apisecret,
-        access_token_key: auth.twauth.token,
-        access_token_secret: auth.twauth.tokensecret
+        consumer_key: process.env.TWITTER_API_KEY,
+        consumer_secret: process.env.TWITTER_API_SECRET,
+        access_token_key: process.env.TWITTER_TOKEN,
+        access_token_secret: process.env.TWITTER_TOKEN_SECRET
     });
     let re = /http(?:s?):\/\/(?:www\.)?twitter(?:\.com\/)([\w]*)\/status\/(\d*)?/;
     let tw_link = split_msg.find(word => word.indexOf('twitter.com/') !== -1)
@@ -261,52 +267,57 @@ const add_permission = async (info_object) => {
     let { channel, message, userstate, split_msg } = info_object;
     const permission = await get_permission(info_object);
     if (!permission) return 'Permission denied'
+    console.log('PERMISSION GRANTED!')
     if (!split_msg[1]) return 'No user specified'
 
-    const adapter = new FileSync('permission.json')
+    const adapter = new FileSync('./private/database.json')
     const db = low(adapter)
-    if (!db.has(channel).value()) {
-        db.set(channel, []).write()
-    }
-    if (!db.get(channel).find({name: split_msg[1]}).value()) {
-        db.get(channel).push({
+
+    if (!db.has(channel).value()) db.set(channel, {}).write()
+    if (!db.has(channel + '.perm').value()) db.set(channel + '.perm', []).write()
+
+    if (!db.get(channel + '.perm').find({name: split_msg[1]}).value()) {
+        db.get(channel + '.perm').push({
             name: split_msg[1],
             date: new Date(),
             made_by: userstate.username
         }).write()
+        return `${split_msg[1]} added to permission list`
     }
-    return `${split_msg[1]} added to permission list`
-
+    return `${split_msg[1]} is already on the list`
 };
 
 const list_permission = async (info_object) => {
     let { channel, message, userstate, split_msg } = info_object;
-    const adapter = new FileSync('permission.json')
+    const adapter = new FileSync('./private/database.json')
     const db = low(adapter)
 
-    const perm_list = db.get(channel).value().map(user => user.name)
+    if (!db.has(channel).value()) db.set(channel, {}).write()
+    if (!db.has(channel + '.perm').value()) db.set(channel + '.perm', []).write()
+
+    const perm_list = db.get(channel + '.perm').value().map(user => user.name)
+
     if (perm_list.length === 0) {
-        return {names_string: 'Emtpy list', perm_list: perm_list}
+        return { names_string: 'Emtpy list', perm_list: perm_list }
     }
-    return {names_string: perm_list.join(' '), perm_list: perm_list}
+    return { names_string: perm_list.join(' '), perm_list: perm_list }
 };
 
 const get_permission = async (info_object) => {
     let { channel, message, userstate, split_msg } = info_object;
-    let { perm_list } = await list_permission(info_object)
-    console.log(perm_list)
+    let { perm_list } = await list_permission(info_object);
+    console.log('perm_list: ', perm_list);
     if (userstate.username === channel) {
         console.log(1)
         return true
-    } else if (userstate.username.mod) {
+    } else if (userstate.mod) {
         console.log(2)
         return true
-    } else if (perm_list && perm_list.includes(userstate.username)) {
+    } else if (perm_list && perm_list.includes(userstate['display-name'])) {
         console.log(3)
         return true
     } else {
         const followage = await get_followage(info_object)
-        console.log(followage)
         let two_years = 730
         if (parseInt(followage) >= two_years) {
             console.log(4)
@@ -314,6 +325,22 @@ const get_permission = async (info_object) => {
         }
         return false
     }
+};
+
+const get_timezone = async (info_object) => {
+    let { split_msg } = info_object;
+    const res = await axios.get('http://api.timezonedb.com/v2/convert-time-zone?key=' + process.env.TMZDB_API_KEY + '&to=America/New_York&from=Europe/Stockholm&format=json')
+    console.log(parseInt(res.data.fromTimestamp) - parseInt(res.data.toTimestamp))
+    const [msg_hour, msg_minute] = split_msg[1].split(':')
+    console.log(msg_hour, msg_minute)
+    console.log(res.data)
+    const new_hour = (parseInt(res.data.fromTimestamp) - parseInt(res.data.toTimestamp)) / 3600
+    // const new_time = parseInt(split_msg[1]) - parseInt(hour_difference)
+    // console.log(new_time)
+    // return new_time + ' ' + res.data.toAbbreviation;
+    // let m = moment('2018-02-21T00:45:00.000Z').tz('America/New_York');
+    // let usTimeFormat = 'hh:mm:ss a';
+    // console.log(m.format(usTimeFormat));
 };
 
 module.exports = {
@@ -331,5 +358,6 @@ module.exports = {
     get_youtube_info,
     get_tweet_info,
     add_permission,
-    list_permission
+    list_permission,
+    get_timezone
 };

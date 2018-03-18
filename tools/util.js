@@ -13,6 +13,21 @@ function secondsToString(seconds) {
     return str.trim()
 }
 
+function secondsToString2(seconds) {
+    let str = ''
+    let years = Math.floor(seconds / 31536000);
+    if (years > 0) str += years + 'y '
+    let days = Math.floor((seconds % 31536000) / 86400);
+    if (days > 0) str += days + 'd '
+    let hours = Math.floor(((seconds % 31536000) % 86400) / 3600);
+    if (hours > 0) str += hours + ':'
+    let mins = Math.floor((((seconds % 31536000) % 86400) % 3600) / 60);
+    if (mins > 0) str += mins + ':'
+    let secs = Math.floor((((seconds % 31536000) % 86400) % 3600) % 60);
+    if (secs > 0) str += secs + ''
+    return str.trim()
+}
+
 const get_game_link = (object, rel_name) => {
     // return object.links.find(link => link.rel === rel_name).uri;
     return object.links.find(link => {
@@ -34,5 +49,6 @@ const get_correct_category = (category_list, title) => {
 module.exports = {
     get_game_link: get_game_link,
     get_correct_category: get_correct_category,
-    secondsToString: secondsToString
+    secondsToString: secondsToString,
+    secondsToString2: secondsToString2
 }
