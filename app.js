@@ -2,7 +2,7 @@ require('dotenv').load();
 const tmi = require('tmi.js');
 const commands = require('./all_commands.js');
 const tc = require('./tools/title_category')
-const options = require('./tools/options.js');
+const options = require('./private/options.js');
 
 var client = new tmi.client(options.options);
 
@@ -18,6 +18,12 @@ client.on('connected', (address, port) => {
 // client.on('part', (channel, username, self) => {
 //     console.log(username + ' left.');
 // })
+
+client.on("resub", (channel, username, months, message, userstate, methods) => {
+    client.say(channel, "MY MAN! " + username.username.toUpperCase())
+});
+
+
 
 client.on('chat', (channel, userstate, message, self) => {
 
@@ -90,6 +96,7 @@ client.on('chat', (channel, userstate, message, self) => {
             break;
         case '!slots':
             var emotes = ['Kappa','Jebaited','MingLee','DansGame','PogChamp', 'Kreygasm']
+            // emotes = ['Kappa']
             var rolls = [];
 
             for (var i = 0; i < 3; i++) {
@@ -101,7 +108,12 @@ client.on('chat', (channel, userstate, message, self) => {
             for (var i = 0; i < rolls.length; i++) {
                 sentence += emotes[rolls[i]] + ' | ';
             }
-            client.say('habbe', sentence.slice(0,-2))
+            
+            sentence = sentence.slice(0,-2)
+
+            if (rolls[0] === rolls[1] && rolls[1] === rolls[2]) sentence+= ' ---> ' + userstate['display-name'] + ' Legend!'
+
+            client.say('habbe', sentence)
             break;
         case '!addperm':
             commands.add_permission(info_object)
@@ -116,17 +128,31 @@ client.on('chat', (channel, userstate, message, self) => {
             // commands.get_timezone(info_object)
             // .then(res => { client.say(channel, res) }).catch(err => { console.log(err) })
             break;
+        case '!connect':
+        case '!join':
+            commands.join_channel(info_object)
+            .then(res => { client.say(channel, res) })
+            .catch(err => { console.log(err) })
+            break;
+        
+        case '!disconnect':
+        case '!part':
+        case '!leave':
+            commands.leave_channel(info_object)
+            .then(res => { client.say(channel, res) })
+            .catch(err => { console.log(err) })
+            break;
         default:
         // console.log('DEFAULT');
             break;
     }
-    if (message.indexOf('https://www.youtube.com') >= 0) {
+    if (message.indexOf('https://www.youtube.com') > -1) {
         commands.get_youtube_info(info_object)
         .then(res => { client.say(channel, res) }).catch(err => { console.log(err) })
-    } else if (message.indexOf('https://youtu.be') >= 0) {
+    } else if (message.indexOf('https://youtu.be') > -1) {
         commands.get_youtube_info(info_object, true)
         .then(res => { client.say(channel, res) }).catch(err => { console.log(err) })
-    } else if (message.indexOf('twitter.com/') >= 0) {
+    } else if (message.indexOf('twitter.com/') > -1) {
         console.log('twitter')
         commands.get_tweet_info(info_object)
         .then(res => { client.say(channel, res) }).catch(err => { console.log(err) })

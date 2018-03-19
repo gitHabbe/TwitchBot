@@ -1,12 +1,14 @@
 const low = require('lowdb');
 const axios = require('axios');
 const FileSync = require('lowdb/adapters/FileSync');
+const Twitter = require('twitter');
+const fs = require('fs');
+
 const fetching = require('./tools/fetching.js');
 const util = require('./tools/util.js');
 const tg = require('./tools/title_category.js');
 const wr = require('./tools/fetch_wr.js');
 const pb = require('./tools/fetch_pb.js');
-const Twitter = require('twitter');
 
 const get_wr = async (info_object) => {
     let { channel, userstate, message, split_msg } = info_object;
@@ -343,6 +345,42 @@ const get_timezone = async (info_object) => {
     // console.log(m.format(usTimeFormat));
 };
 
+const join_channel = async (info_object) => {
+    let { channel, message, userstate, split_msg } = info_object;
+    if (channel != 'habbe2') return;
+
+    const channel_string = fs.readFileSync('./private/channels.txt', 'utf8').slice(0, -1);
+    channel_list = channel_string.split('\n');
+    console.log(channel_list);
+    const joined_boolean = channel_list.find(name => name === userstate.username);
+    if (joined_boolean) {
+        return "I'm already in your channel."
+    } else {
+        fs.appendFileSync('./private/channels.txt', userstate.username + '\n');
+        return "I have joined your channel, use !help to learn my commands."
+    }
+};
+
+const leave_channel = async (info_object) => {
+    let { channel, message, userstate, split_msg } = info_object;
+    if (channel != 'habbe2') return;
+
+    const channel_string = fs.readFileSync('./private/channels.txt', 'utf8').slice(0, -1);
+    channel_list = channel_string.split('\n');
+    console.log(channel_list);
+    const channel_list_index = channel_list.indexOf(userstate.username);
+    console.log('channel_list_index: ', channel_list_index);
+    if (channel_list_index > -1) {
+        channel_list.splice(channel_list_index, 1);
+        channel_list.join('\n');
+        console.log(channel_list);
+        fs.writeFileSync("./private/channels.txt", channel_list + "\n");
+        return "Leaving channel.";
+    } else {
+        return "I not in your channel.";
+    }
+};
+
 module.exports = {
     get_wr,
     get_pb,
@@ -359,5 +397,7 @@ module.exports = {
     get_tweet_info,
     add_permission,
     list_permission,
-    get_timezone
+    get_timezone,
+    join_channel: join_channel,
+    leave_channel: leave_channel
 };
