@@ -5,6 +5,10 @@ const fetch_speedrun_uri = (uri) => {
     return axios.get(uri);
 };
 
+const fetch_game_levels = (id) => {
+    return axios.get(`https://www.speedrun.com/api/v1/games/${id}/levels`)
+}
+
 const get_speedrunner = (name) => {
     return axios.get(encodeURI(`https://www.speedrun.com/api/v1/users?name=${name}`));
 };
@@ -58,5 +62,6 @@ module.exports = {
     get_twitch_videos: get_twitch_videos,
     get_speedrungame_by_abbreviation: get_speedrungame_by_abbreviation,
     get_leaderboard: get_leaderboard,
-    get_speedrunner: get_speedrunner
+    get_speedrunner: get_speedrunner,
+    fetch_game_levels: fetch_game_levels
 }

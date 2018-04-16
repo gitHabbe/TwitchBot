@@ -1,9 +1,10 @@
 const low = require('lowdb');
-const axios = require('axios');
 const FileSync = require('lowdb/adapters/FileSync');
+const axios = require('axios');
 const Twitter = require('twitter');
 const fs = require('fs');
 
+const fuse = require('./tools/fuse.js');
 const fetching = require('./tools/fetching.js');
 const util = require('./tools/util.js');
 const tg = require('./tools/title_category.js');
@@ -48,12 +49,76 @@ const get_pb = async (info_object) => {
     return pb.fetch_pb(info_object)
 };
 
+const get_il_wr = async (info_object) => {
+    let { channel, userstate, message, split_msg } = info_object;
+    const game = await tg.get_game_id(info_object);
+    const level_list = await fetching.fetch_game_levels(game.game_id);
+    const level_list_names = level_list.data.data.map((level, index) => {
+        let level_name = level.name
+        // console.log(level_name)
+        if (level_name.indexOf('(') > -1) {
+            level_name = level_name.replace('(', '')
+            level_name = level_name.replace(')', '')
+        }
+        const lb_uri = level.links.find(link => link.rel === "leaderboard")
+        return { category: level_name, lb_uri: lb_uri.uri, index: index }
+    })
+    // console.log('level_list_names: ', level_list_names);
+    const fuse_hit = fuse.get_fuse_result(level_list_names, split_msg.slice(2).join(' '))
+    const level_lb = await fetching.fetch_speedrun_uri(fuse_hit.lb_uri + "?top=1");
+    const wr_time = util.millisecondsToString(level_lb.data.data.runs[0].run.times.primary_t);
+    const speedrunner = await fetching.fetch_speedrun_uri(level_lb.data.data.runs[0].run.players[0].uri);
+    const days_ago = Math.floor((new Date() - new Date(level_lb.data.data.runs[0].run.date)) / 86400000)
+
+    return `${level_list.data.data[fuse_hit.index].name} WR: ${wr_time} \
+by ${speedrunner.data.data.names.international} \
+${days_ago} days ago`;
+};
+
+const get_il_pb = async (info_object) => {
+    let { channel, userstate, message, split_msg } = info_object;
+
+    runner_msg = split_msg[1];
+    info_object.split_msg.splice(1, 1);
+    let speedrunner_list = await fetching.get_speedrunner(runner_msg)
+    // console.log('speedrunner_list.data: ', speedrunner_list.data);
+    speedrunner = speedrunner_list.data.data.find(runner => runner.names.international.toLowerCase() === runner_msg.toLowerCase())
+    // console.log('speedrunner ', speedrunner);
+    
+    
+    console.log('info_object.split_msg: ', info_object.split_msg);
+    const game = await tg.get_game_id(info_object);
+    const level_list = await fetching.fetch_game_levels(game.game_id);
+    const level_list_names = level_list.data.data.map((level, index) => {
+        let level_name = level.name
+        // console.log(level_name)
+        if (level_name.indexOf('(') > -1) {
+            level_name = level_name.replace('(', '')
+            level_name = level_name.replace(')', '')
+        }
+        const lb_uri = level.links.find(link => link.rel === "leaderboard")
+        return { category: level_name, lb_uri: lb_uri.uri, index: index }
+    })
+    const fuse_hit = fuse.get_fuse_result(level_list_names, split_msg.slice(2).join(' '))
+    console.log('fuse_hit: ', fuse_hit);
+    const level_lb = await fetching.fetch_speedrun_uri(fuse_hit.lb_uri);
+    const run = level_lb.data.data.runs.find(run => {
+        return run.run.players[0].id === speedrunner.id
+    })
+    console.log('run: ', run);
+    const player_time = util.millisecondsToString(run.run.times.primary_t)
+    return `${speedrunner.names.international}'s ${fuse_hit.category} PB is ${player_time}. Place: ${run.place}`
+    console.log('run: ', run);
+    
+
+};
+
 const new_cc = async (info_object) => {
     let { channel, message, userstate, split_msg } = info_object;
     const permission = await get_permission(info_object);
     if (!permission) return 'Permission denied';
 
-    const adapter = new FileSync('./private/database.json');
+    const adapter = new FileSync('./Private/database.json');
     const db = low(adapter);
 
     const cmd_text = split_msg.slice(2).join(' ')
@@ -79,12 +144,24 @@ const new_cc = async (info_object) => {
     }
 };
 
+const check_cc = async (info_object) => {
+    let { channel, message, userstate, split_msg } = info_object;
+
+    const adapter = new FileSync('./Private/database.json');
+    const db = low(adapter);
+
+    let test = db.get(channel + '.cc').find({cmd_name: split_msg[0]}).value()
+    if (test) return test.cmd_text;
+    return 'Command not found'
+    console.log('test: ', test);
+};
+
 const delete_cc = async (info_object) => {
     let { channel, message, userstate, split_msg } = info_object;
     const permission = await get_permission(info_object);
     if (!permission) return 'Permission denied'
 
-    const adapter = new FileSync('./private/database.json');
+    const adapter = new FileSync('./Private/database.json');
     const db = low(adapter);
 
     if (db.get(channel + '.cc').find({ cmd_name: split_msg[1] }).value()) {
@@ -119,7 +196,7 @@ const set_highlight = async (info_object) => {
     const permission = await get_permission(info_object);
     if (!permission) return 'Permission denied'
 
-    const adapter = new FileSync('./private/database.json')
+    const adapter = new FileSync('./Private/database.json')
     const db = low(adapter)
     // channel = 'Wilko'
     const twitch_channel = await fetching.get_twitch_channel(channel);
@@ -150,7 +227,7 @@ const set_highlight = async (info_object) => {
 
 const get_highlights = async (info_object) => {
     let { channel, message, userstate } = info_object;
-    const adapter = new FileSync('./private/database.json');
+    const adapter = new FileSync('./Private/database.json');
     const db = low(adapter);
     const all_states = db.getState()
     // console.log(all_states[channel])
@@ -164,13 +241,16 @@ const get_highlights = async (info_object) => {
 
 const get_target_highlight = async (info_object) => {
     let { channel, message, userstate } = info_object;
-    const adapter = new FileSync('./private/database.json');
+    const adapter = new FileSync('./Private/database.json');
     const db = low(adapter);
     const target_highlight = message.slice(7);
     const all_states = db.getState()
     const highlight_hit = all_states[channel].highlights.find(hl => hl.hl_name === target_highlight);
 
-    return highlight_hit
+    const timestamp = util.secondsToString(highlight_hit.timestamp - 100).replace(/\s/g, '')
+    console.log(timestamp)
+    // highlight_hit.hl_name + ', ' + res.hl_url + '?t=' + (res.timestamp - 150) + 's')
+    return highlight_hit.hl_name + ', ' + highlight_hit.hl_url + '?t=' + timestamp;
 
 };
 
@@ -180,7 +260,7 @@ const delete_highlight = async (info_object) => {
     if (!permission) return 'Permission denied'
 
     const target_highlight = message.slice(5)
-    const adapter = new FileSync('./private/database.json');
+    const adapter = new FileSync('./Private/database.json');
     const db = low(adapter);
 
     if (target_highlight === 'all') {
@@ -272,7 +352,7 @@ const add_permission = async (info_object) => {
     console.log('PERMISSION GRANTED!')
     if (!split_msg[1]) return 'No user specified'
 
-    const adapter = new FileSync('./private/database.json')
+    const adapter = new FileSync('./Private/database.json')
     const db = low(adapter)
 
     if (!db.has(channel).value()) db.set(channel, {}).write()
@@ -291,7 +371,7 @@ const add_permission = async (info_object) => {
 
 const list_permission = async (info_object) => {
     let { channel, message, userstate, split_msg } = info_object;
-    const adapter = new FileSync('./private/database.json')
+    const adapter = new FileSync('./Private/database.json')
     const db = low(adapter)
 
     if (!db.has(channel).value()) db.set(channel, {}).write()
@@ -348,15 +428,26 @@ const get_timezone = async (info_object) => {
 const join_channel = async (info_object) => {
     let { channel, message, userstate, split_msg } = info_object;
     if (channel != 'habbe2') return;
+    const adapter = new FileSync('./Private/database.json');
+    const db = low(adapter);
 
-    const channel_string = fs.readFileSync('./private/channels.txt', 'utf8').slice(0, -1);
+    const channel_string = fs.readFileSync('./Private/channels.txt', 'utf8').slice(0, -1);
     channel_list = channel_string.split('\n');
     console.log(channel_list);
     const joined_boolean = channel_list.find(name => name === userstate.username);
+
+    
     if (joined_boolean) {
         return "I'm already in your channel."
     } else {
-        fs.appendFileSync('./private/channels.txt', userstate.username + '\n');
+        fs.appendFileSync('./Private/channels.txt', userstate.username + '\n');
+        if (!db.has(channel).value()) {
+            db.set(channel, {
+                "user-settings": {
+                    "slots": false
+                }
+            }).write()
+        }
         return "I have joined your channel, use !help to learn my commands."
     }
 };
@@ -365,7 +456,7 @@ const leave_channel = async (info_object) => {
     let { channel, message, userstate, split_msg } = info_object;
     if (channel != 'habbe2') return;
 
-    const channel_string = fs.readFileSync('./private/channels.txt', 'utf8').slice(0, -1);
+    const channel_string = fs.readFileSync('./Private/channels.txt', 'utf8').slice(0, -1);
     channel_list = channel_string.split('\n');
     console.log(channel_list);
     const channel_list_index = channel_list.indexOf(userstate.username);
@@ -374,11 +465,74 @@ const leave_channel = async (info_object) => {
         channel_list.splice(channel_list_index, 1);
         channel_list.join('\n');
         console.log(channel_list);
-        fs.writeFileSync("./private/channels.txt", channel_list + "\n");
-        return "Leaving channel.";
+        fs.writeFileSync("./Private/channels.txt", channel_list + "\n");
+        return "Left you channel.";
     } else {
-        return "I not in your channel.";
+        return "I'm not in your channel.";
     }
+};
+
+const enable_component = async (info_object) => {
+    let { channel, message, userstate, split_msg } = info_object;
+
+    let component = split_msg[1];
+    if (component.indexOf('!') >= 0) component = component.replace('!', '')
+    console.log('component: ', component);
+    const adapter = new FileSync('./Private/database.json');
+    const db = low(adapter);
+
+    if (!db.get(channel + '.user-settings.' + component).value()) {
+        db.set(channel + '.user-settings.' + component, true).write()
+        return "!" + component + " is now enabled."
+    }
+    return "!" + component + " already enabled."
+    
+};
+
+const disable_component = async (info_object) => {
+    let { channel, message, userstate, split_msg } = info_object;
+
+    let component = split_msg[1];
+    if (component.indexOf('!') >= 0) component = component.replace('!', '')
+    console.log('component: ', component);
+
+    const adapter = new FileSync('./Private/database.json');
+    const db = low(adapter);
+
+    if (db.get(channel + '.user-settings.' + component).value()) {
+        db.set(channel + '.user-settings.' + component, false).write()
+        return "!" + component + " is now disabled."
+    }
+    return "!" + component + " already disabled."
+};
+
+const slots = async (info_object) => {
+    let { channel, message, userstate, split_msg } = info_object;
+
+    var emotes = ['Kappa','Jebaited','MingLee','DansGame','PogChamp', 'Kreygasm']
+    var rolls = [];
+
+    const adapter = new FileSync('./Private/database.json');
+    const db = low(adapter);
+
+    if (db.get(channel + '.user-settings.slots').value() === false) {
+        return "Slots not avalible in this channel."
+    }
+
+    for (var i = 0; i < 3; i++) {
+        var randomNr = Math.floor(Math.random() * emotes.length)
+        rolls.push(randomNr)
+    }
+    var sentence = '';
+    for (var i = 0; i < rolls.length; i++) {
+        sentence += emotes[rolls[i]] + ' | ';
+    }
+    
+    sentence = sentence.slice(0, -2)
+
+    if (rolls[0] === rolls[1] && rolls[1] === rolls[2]) sentence+= ' ---> ' + userstate['display-name'] + ' Legend!'
+
+    return sentence;
 };
 
 module.exports = {
@@ -399,5 +553,11 @@ module.exports = {
     list_permission,
     get_timezone,
     join_channel: join_channel,
-    leave_channel: leave_channel
+    leave_channel: leave_channel,
+    get_il_wr: get_il_wr,
+    get_il_pb: get_il_pb,
+    check_cc: check_cc,
+    enable_component: enable_component,
+    disable_component: disable_component,
+    slots: slots
 };

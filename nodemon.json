@@ -1,5 +1,6 @@
 {
   "verbose": true,
   "ignore": [
-    "./private/*.*"]
+    "./Private/*.json",
+    "./Private/*.js"]
 }

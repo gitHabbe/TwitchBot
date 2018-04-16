@@ -7,7 +7,7 @@ const util = require('./util.js');
 const get_game_id = async (info_object) => {
     let { channel, userstate, message, split_msg } = info_object;
     const msg_game = split_msg.length > 1 && split_msg[1];
-    const adapter = new FileSync('./private/game_id_list.json');
+    const adapter = new FileSync('./Private/game_id_list.json');
     const db = low(adapter);
     if (msg_game) {
         if (!db.has(msg_game + '.id').value()) {
@@ -46,7 +46,7 @@ const get_category = async (info_object) => {
     let msg_category = split_msg.length > 2 && split_msg.slice(2);
     console.log('msg_category: ', msg_category);
     
-    const adapter = new FileSync('./private/game_id_list.json');
+    const adapter = new FileSync('./Private/game_id_list.json');
     const db = low(adapter);
     if (!db.has(abbrev + '.categories').value()) db.set(abbrev + '.categories', []).write()
     
