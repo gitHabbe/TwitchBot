@@ -428,19 +428,21 @@ const get_timezone = async (info_object) => {
 const join_channel = async (info_object) => {
     let { channel, message, userstate, split_msg } = info_object;
     if (channel != 'habbe2') return;
+
     const adapter = new FileSync('./Private/database.json');
     const db = low(adapter);
 
-    const channel_string = fs.readFileSync('./Private/channels.txt', 'utf8').slice(0, -1);
-    channel_list = channel_string.split('\n');
+    const channel_list = JSON.parse(fs.readFileSync('./Private/channels.json', 'utf8'))
+    // channel_list = channel_string.split('\n');
     console.log(channel_list);
     const joined_boolean = channel_list.find(name => name === userstate.username);
 
-    
     if (joined_boolean) {
         return "I'm already in your channel."
     } else {
-        fs.appendFileSync('./Private/channels.txt', userstate.username + '\n');
+        // fs.appendFileSync('./Private/channels.txt', userstate.username + '\n');
+        channel_list.push(userstate.username)
+        fs.writeFileSync('./Private/channels.json', JSON.stringify(channel_list))
         if (!db.has(channel).value()) {
             db.set(channel, {
                 "user-settings": {
@@ -516,7 +518,7 @@ const slots = async (info_object) => {
     const db = low(adapter);
 
     if (db.get(channel + '.user-settings.slots').value() === false) {
-        return "Slots not avalible in this channel."
+        return "Slots not enabled in this channel."
     }
 
     for (var i = 0; i < 3; i++) {
@@ -533,6 +535,17 @@ const slots = async (info_object) => {
     if (rolls[0] === rolls[1] && rolls[1] === rolls[2]) sentence+= ' ---> ' + userstate['display-name'] + ' Legend!'
 
     return sentence;
+};
+
+const help_command = async (info_object) => {
+    let { channel, message, userstate, split_msg } = info_object;
+
+    if (!split_msg[1]) {
+        return 'Use "!help [!Option]". Options: ' +
+        'enable, disable, newcmd, delcmd, hl, hls, gethl, ' +
+        'dhl, wr, pb, ilwr, ilpb, addperm, getperm, ' +
+        'title, uptime, leave';
+    }
 };
 
 module.exports = {
@@ -552,12 +565,13 @@ module.exports = {
     add_permission,
     list_permission,
     get_timezone,
-    join_channel: join_channel,
-    leave_channel: leave_channel,
-    get_il_wr: get_il_wr,
-    get_il_pb: get_il_pb,
-    check_cc: check_cc,
-    enable_component: enable_component,
-    disable_component: disable_component,
-    slots: slots
+    join_channel,
+    leave_channel,
+    get_il_wr,
+    get_il_pb,
+    check_cc,
+    enable_component,
+    disable_component,
+    slots,
+    help_command
 };

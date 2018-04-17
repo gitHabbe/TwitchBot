@@ -4,6 +4,7 @@ const fetching = require('./fetching.js');
 const fuse = require('./fuse.js');
 const util = require('./util.js');
 
+
 const get_game_id = async (info_object) => {
     let { channel, userstate, message, split_msg } = info_object;
     const msg_game = split_msg.length > 1 && split_msg[1];
