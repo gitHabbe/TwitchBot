@@ -11,6 +11,7 @@ var client = new tmi.client(options.options);
 
 client.connect();
 
+
 client.on('connected', (address, port) => {
     console.log(`CONNECTED: ${address}:${port}`);
 })
