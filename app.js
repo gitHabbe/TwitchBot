@@ -68,6 +68,8 @@ client.on('chat', (channel, userstate, message, self) => {
             .then(res => { client.say(channel, res) })
             .catch(err => { console.log('New CC err') })
             break;
+        case '!deletecmd':
+        case '!removecmd':
         case '!delcmd':
             commands.delete_cc(info_object)
             .then(res => { client.say(channel, res) })
@@ -148,7 +150,6 @@ client.on('chat', (channel, userstate, message, self) => {
         // console.log('DEFAULT');
             break;
     }
-    console.log(split_msg[0])
     if (split_msg[0].startsWith("!")) {
         console.log('INSIDE')
         const adapter = new FileSync('./Private/database.json');
