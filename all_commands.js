@@ -470,7 +470,7 @@ const leave_channel = async (info_object) => {
         console.log(channel_list);
         // fs.writeFileSync("./Private/channels.txt", channel_list + "\n");
         fs.writeFileSync('./Private/channels.json', JSON.stringify(channel_list))
-        return "Left you channel.";
+        return "I have left your channel.";
     } else {
         return "I'm not in your channel.";
     }
@@ -551,10 +551,10 @@ const help_command = async (info_object) => {
         split_msg[1] = split_msg[1].replace(/!/g, '')
         switch (split_msg[1]) {
             case 'enable':
-                'Use !enable [component] to enable a component.'
+                return 'Use !enable [component] to enable a component.'
                 break;
             case 'disable':
-                'Use !disable [component] to disable a component.'
+                return 'Use !disable [component] to disable a component.'
                 break;
             case 'newcmd':
                 return 'Use !newcmd [command-name] [command-text] to create a custom command. (!addcmd also works)'
