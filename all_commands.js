@@ -542,6 +542,7 @@ const slots = async (info_object) => {
 const help_command = async (info_object) => {
     let { channel, message, userstate, split_msg } = info_object;
 
+    
     if (!split_msg[1]) {
         return 'Use "!help [!Option]". Options: ' +
         'enable, disable, newcmd, delcmd, hl, hls, gethl, ' +
