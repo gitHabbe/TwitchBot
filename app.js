@@ -98,7 +98,7 @@ client.on('chat', (channel, userstate, message, self) => {
         case '!gethl':
             commands.get_target_highlight(info_object)
             .then(res => { client.say(channel, res) })
-            .catch(err => { client.say(channel, 'Cannot find highlight') });
+            .catch(err => { client.say(channel, 'Cannot find highlight. Use !hls to list your highlights.') });
             // console.log(target_highlight);
             break;
         case '!dhl':
@@ -108,7 +108,7 @@ client.on('chat', (channel, userstate, message, self) => {
             break;
         case '!followage':
             commands.get_followage(info_object)
-            .then(res => { client.say(channel, userstate['display-name'] + ' followage: ' + res + ' days') })
+            .then(res => { client.say(channel, res) })
             .catch(err => { client.say(channel, 'Cannot find followage') });
             break;
         case '!slots':

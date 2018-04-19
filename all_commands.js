@@ -70,9 +70,9 @@ const get_il_wr = async (info_object) => {
     const speedrunner = await fetching.fetch_speedrun_uri(level_lb.data.data.runs[0].run.players[0].uri);
     const days_ago = Math.floor((new Date() - new Date(level_lb.data.data.runs[0].run.date)) / 86400000)
 
-    return `${level_list.data.data[fuse_hit.index].name} WR: ${wr_time} \
-by ${speedrunner.data.data.names.international} \
-${days_ago} days ago`;
+    return `${level_list.data.data[fuse_hit.index].name} WR: ${wr_time}` +
+    `by ${speedrunner.data.data.names.international}` +
+    `${days_ago} days ago`;
 };
 
 const get_il_pb = async (info_object) => {
@@ -121,7 +121,11 @@ const new_cc = async (info_object) => {
     const adapter = new FileSync('./Private/database.json');
     const db = low(adapter);
 
-    const cmd_text = split_msg.slice(2).join(' ')
+    const cmd_text = split_msg.slice(2).join(' ');
+
+    if (db.get(channel + '.cc').value().length > 25) {
+        return 'Max limit reached (25). Please delete old commands and try again.'
+    }
 
     if (db.get('reserved-words').value().find(reserved_cmd => reserved_cmd === split_msg[1])) return 'Command-name reserved';
     if (!split_msg[1]) return 'No command-name specified';
@@ -152,7 +156,7 @@ const check_cc = async (info_object) => {
 
     let test = db.get(channel + '.cc').find({cmd_name: split_msg[0]}).value()
     if (test) return test.cmd_text;
-    return 'Command not found'
+    // return 'Command not found.'
     console.log('test: ', test);
 };
 
@@ -197,15 +201,18 @@ const set_highlight = async (info_object) => {
     if (!permission) return 'Permission denied'
 
     const adapter = new FileSync('./Private/database.json')
-    const db = low(adapter)
-    // channel = 'Wilko'
+    const db = low(adapter);
+
+    if (db.get(channel + '.highlights').value().length > 15) {
+        return 'Max limit reached (15). Please delete old highlights and try again.'
+    }
+
     const twitch_channel = await fetching.get_twitch_channel(channel);
     const user_video_list = await fetching.get_twitch_videos(twitch_channel.data.data[0].user_id);
     const highlight_id = user_video_list.data.data[0].id;
     const highlight_url = user_video_list.data.data[0].url
     const uptime_date = new Date(twitch_channel.data.data[0].started_at);
     const seconds_ago = Math.floor(((new Date() - uptime_date) / 1000));
-
     if (!db.has(channel).value()) db.set(channel, []).write()
     if (!db.has(channel + '.highlights').value()) db.set(channel + '.highlights', []).write()
 
@@ -218,6 +225,10 @@ const set_highlight = async (info_object) => {
             hl_id: highlight_id,
             date: new Date()
         }).write()
+        if (db.get(channel + '.highlights').value().length > 14) {
+            return `Max highlight limit reached (15), please delete old highlights.` +
+            `Highlight still created: ${message.slice(4)}`
+        }
         return `Highlight created: ${message.slice(4)}`
     } else {
         return 'Highlight already exists'
@@ -226,12 +237,10 @@ const set_highlight = async (info_object) => {
 };
 
 const get_highlights = async (info_object) => {
-    let { channel, message, userstate } = info_object;
+    let { channel } = info_object;
     const adapter = new FileSync('./Private/database.json');
     const db = low(adapter);
-    const all_states = db.getState()
-    // console.log(all_states[channel])
-    // console.log(all_states[channel].highlights)
+    const all_states = db.getState();
     if (all_states[channel].highlights &&
         all_states[channel].highlights.length != 0) {
         return 'Highlights: ' + all_states[channel].highlights.map(hl => hl.hl_name).join(', ')
@@ -244,13 +253,11 @@ const get_target_highlight = async (info_object) => {
     const adapter = new FileSync('./Private/database.json');
     const db = low(adapter);
     const target_highlight = message.slice(7);
-    const all_states = db.getState()
+    const all_states = db.getState();
     const highlight_hit = all_states[channel].highlights.find(hl => hl.hl_name === target_highlight);
-
     const timestamp = util.secondsToString(highlight_hit.timestamp - 100).replace(/\s/g, '')
-    console.log(timestamp)
-    // highlight_hit.hl_name + ', ' + res.hl_url + '?t=' + (res.timestamp - 150) + 's')
-    return highlight_hit.hl_name + ', ' + highlight_hit.hl_url + '?t=' + timestamp;
+
+    return `${highlight_hit.hl_name}: ${highlight_hit.hl_url}?t=${timestamp}`;
 
 };
 
@@ -277,20 +284,21 @@ const delete_highlight = async (info_object) => {
 };
 
 const get_followage = async (info_object) => {
-    let { channel, message, userstate } = info_object;
-    
+    let { channel, message, userstate, split_msg } = info_object;
+    let follower = userstate['user-id'];
     const streamer = await fetching.get_twitch_channel(channel);
     const streamer_id = streamer.data.data[0].user_id;
-    const followage_info = await fetching.get_twitch_followage(streamer_id, userstate['user-id']);
+
+    if (split_msg[1]) follower = split_msg[1];
+
+    const followage_info = await fetching.get_twitch_followage(streamer_id, follower);
     console.log(followage_info.data)
     if (followage_info.data.data.length >= 1) {
         const follow_date = new Date(followage_info.data.data[0].followed_at)
         const days_ago = Math.floor(((new Date() - follow_date) / 86400000))
-    
-        return days_ago;
-        
+        return `${follower} followage: ${days_ago} days`;
     }
-    return -1
+    return `Followage of ${follower} not found.`;
 };
 
 const get_youtube_info = async (info_object, short = false) => {
@@ -432,26 +440,25 @@ const join_channel = async (info_object) => {
     const adapter = new FileSync('./Private/database.json');
     const db = low(adapter);
 
-    const channel_list = JSON.parse(fs.readFileSync('./Private/channels.json', 'utf8'))
-    // channel_list = channel_string.split('\n');
-    console.log(channel_list);
+    const channel_list = JSON.parse(fs.readFileSync('./Private/channels.json', 'utf8'));
     const joined_boolean = channel_list.find(name => name === userstate.username);
 
-    if (joined_boolean) {
-        return "I'm already in your channel."
-    } else {
-        // fs.appendFileSync('./Private/channels.txt', userstate.username + '\n');
-        channel_list.push(userstate.username)
-        fs.writeFileSync('./Private/channels.json', JSON.stringify(channel_list))
-        if (!db.has(channel).value()) {
-            db.set(channel, {
-                "user-settings": {
-                    "slots": false
-                }
-            }).write()
-        }
-        return "I have joined your channel, use !help to learn my commands."
+    if (joined_boolean) return "I'm already in your channel.";
+
+    channel_list.push(userstate.username)
+    fs.writeFileSync('./Private/channels.json', JSON.stringify(channel_list))
+    if (!db.has(channel).value()) {
+        db.set(channel, {
+            "user-settings": {
+                "slots": false
+            },
+            "perm": [],
+            "highlights": [],
+            "cc": [],
+            "joined": new Date()
+        }).write()
     }
+    return "I have joined your channel, use !help to learn my commands."
 };
 
 const leave_channel = async (info_object) => {
@@ -479,29 +486,42 @@ const leave_channel = async (info_object) => {
 const enable_component = async (info_object) => {
     let { channel, message, userstate, split_msg } = info_object;
 
+    const permission = await get_permission(info_object);
+    if (!permission) return 'Permission denied'
+
     let component = split_msg[1];
     if (component.indexOf('!') >= 0) component = component.replace('!', '')
     console.log('component: ', component);
     const adapter = new FileSync('./Private/database.json');
     const db = low(adapter);
+    
+    const all_states = db.getState();
 
+    if (all_states[channel]['user-settings'][component] == undefined) {
+        return "Component not found.";
+    }
     if (!db.get(channel + '.user-settings.' + component).value()) {
         db.set(channel + '.user-settings.' + component, true).write()
         return "!" + component + " is now enabled."
     }
-    return "!" + component + " already enabled."
-    
+    return "!" + component + " already enabled.";
 };
 
 const disable_component = async (info_object) => {
     let { channel, message, userstate, split_msg } = info_object;
 
+    const permission = await get_permission(info_object);
+    if (!permission) return 'Permission denied'
+
     let component = split_msg[1];
     if (component.indexOf('!') >= 0) component = component.replace('!', '')
     console.log('component: ', component);
-
     const adapter = new FileSync('./Private/database.json');
     const db = low(adapter);
+
+    if (all_states[channel]['user-settings'][component] == undefined) {
+        return "Component not found.";
+    }
 
     if (db.get(channel + '.user-settings.' + component).value()) {
         db.set(channel + '.user-settings.' + component, false).write()
@@ -541,12 +561,12 @@ const slots = async (info_object) => {
 
 const help_command = async (info_object) => {
     let { channel, message, userstate, split_msg } = info_object;
-
+ 
     if (!split_msg[1]) {
-        return 'Use "!help [!Option]". Options: ' +
+        return 'Use "!help [OPTION]". OPTIONS: ' +
         'enable, disable, newcmd, delcmd, hl, hls, gethl, ' +
         'dhl, wr, pb, ilwr, ilpb, addperm, getperm, ' +
-        'title, uptime, leave';
+        'title, uptime, leave | Without [ ].';
     } else {
         split_msg[1] = split_msg[1].replace(/!/g, '')
         switch (split_msg[1]) {
@@ -569,7 +589,7 @@ const help_command = async (info_object) => {
                 return 'Use !hls to list all your highlight-names.'
                 break;
             case 'dhl':
-                return 'Use !dhl [highlight-name] to delete a highlight.'
+                return 'Use !dhl [highlight-name] or "!dhl all" to delete all highlights.'
                 break;
             case 'addperm':
                 return 'Use !addperm [name] to give a person permission to manage highlights/customcommands/permissions.'
@@ -584,14 +604,14 @@ const help_command = async (info_object) => {
                 return 'Shows how long your stream has been live.'
                 break;
             case 'wr':
-                return 'Use !wr [game] [category] to get world record time. Leave [category] empty to get category from title. ' +
+                return 'Use !wr [game] [category] to get world record time. Leave [category] empty to get category from stream title. ' +
                 'Leave [game] empty to get game from current game being played.'
                 break;
             case 'ilwr':
                 return 'Use !ilwr [game] [level] [vehicle] to get world record time. Currently only works for Diddy Kong Racing.'
                 break;
             case 'pb':
-                return 'Use !pb [player-name] [game] [category] to get personal best time. Leave [category] empty to get category from title. ' +
+                return 'Use !pb [player-name] [game] [category] to get personal best time. Leave [category] empty to get category from stream title. ' +
                 'Leave [game] empty to get game from current game being played.'
                 break;
             case 'ilpb':
