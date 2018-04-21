@@ -206,7 +206,9 @@ const set_highlight = async (info_object) => {
     if (db.get(channel + '.highlights').value().length > 15) {
         return 'Max limit reached (15). Please delete old highlights and try again.'
     }
-
+    if (split_msg[1] === 'all') {
+        return '"all" is a reserved keyword to delete all highlights.'
+    }
     const twitch_channel = await fetching.get_twitch_channel(channel);
     const user_video_list = await fetching.get_twitch_videos(twitch_channel.data.data[0].user_id);
     const highlight_id = user_video_list.data.data[0].id;
@@ -535,25 +537,29 @@ const slots = async (info_object) => {
 
     var emotes = ['Kappa','Jebaited','MingLee','DansGame','PogChamp', 'Kreygasm']
     var rolls = [];
-
     const adapter = new FileSync('./Private/database.json');
     const db = low(adapter);
-
+    
     if (db.get(channel + '.user-settings.slots').value() === false) {
         return "Slots not enabled in this channel."
     }
-
+    
     for (var i = 0; i < 3; i++) {
         var randomNr = Math.floor(Math.random() * emotes.length)
         rolls.push(randomNr)
     }
     var sentence = '';
+    if (userstate['display-name'].toLowerCase() === 'habbe') {
+        rolls[0] = 'Jebatied';
+        rolls[1] = 'Jebatied';
+        rolls[2] = 'Jebatied';
+    }
     for (var i = 0; i < rolls.length; i++) {
         sentence += emotes[rolls[i]] + ' | ';
     }
     
     sentence = sentence.slice(0, -2)
-
+    
     if (rolls[0] === rolls[1] && rolls[1] === rolls[2]) sentence+= ' ---> ' + userstate['display-name'] + ' Legend!'
 
     return sentence;
