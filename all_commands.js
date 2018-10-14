@@ -13,13 +13,14 @@ const pb = require('./tools/fetch_pb.js');
 
 const get_wr = async (info_object) => {
     const game_id_and_category = await tg.set_game_and_category(info_object);
+    // console.log("game_id_and_category: ", game_id_and_category)
     info_object.fuse_hit = game_id_and_category.fuse_hit;
     info_object.game_id = game_id_and_category.game_id;
     info_object.category_id = game_id_and_category.category_id;
-    
-    const wr_msg = wr.fetch_wr(info_object)
-
-    return wr_msg;
+    const wr_msg = await wr.fetch_wr(info_object);
+    console.log("wr_msg: ", wr_msg)
+    // const wr_msg = "sadf"
+;    return wr_msg;
 };
 
 const get_pb = async (info_object) => {

@@ -30,19 +30,19 @@ client.on('chat', async (channel, userstate, message, self) => {
     const split_msg = message.split(' ');
     let info_object = {
         channel: channel.slice(1),
-        userstate: userstate,
-        message: message,
-        split_msg: split_msg,
-        self: self
+        userstate,
+        message,
+        split_msg,
+        self
     };
     if (self) return;
     switch (split_msg[0]) {
         case '!wr':
             const wr_msg = await commands.get_wr(info_object);
-            client.say(channel, wr_msg)
+            client.say(channel, wr_msg);
             break;
         case '!pb':
-            const pb_msg = commands.get_pb(info_object);
+            const pb_msg = await commands.get_pb(info_object);
             client.say(channel, pb_msg);
             break;
         case '!ilwr':

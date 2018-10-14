@@ -3,6 +3,7 @@ const fetching = require('./fetching.js');
 
 async function fetch_wr(info_object) {
     let { channel, userstate, message, split_msg, game_id, category_id, fuse_hit, speedrun_game } = info_object;
+    
     const speedrun = await fetching.get_leaderboard(game_id, category_id, true);
     const speedrunner = await fetching.fetch_speedrun_uri(speedrun.data.data.runs[0].run.players[0].uri);
     const wr_time = util.secondsToString2(speedrun.data.data.runs[0].run.times.primary_t);
@@ -13,5 +14,5 @@ ${days_ago} days ago`;
 }
 
 module.exports = {
-    fetch_wr: fetch_wr
+    fetch_wr
 };

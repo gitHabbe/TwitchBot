@@ -4,7 +4,6 @@ const fetching = require('./fetching.js');
 const fuse = require('./fuse.js');
 const util = require('./util.js');
 
-
 const get_game_id = async (info_object) => {
     let { channel, split_msg } = info_object;
     const msg_game = split_msg.length > 1 && split_msg[1];
@@ -19,42 +18,28 @@ const get_game_id = async (info_object) => {
             } catch (err) {
                 return "Game not found.";
             }
-            // return fetching.get_speedrungame_by_abbreviation(msg_game)
-            //     .then(res => {
-            //         db.set(msg_game + '.id' , res.data.data[0].id).write()
-            //         return { 'game_id': res.data.data[0].id, 'abbrev': res.data.data[0].abbreviation };
-            //     })
-            //     .catch(err => {
-            //         return "Game not found.";
-            //     });
         } else {
-            console.log('Game found in DB: ', msg_game);
             return { 'game_id': db.get(msg_game + '.id').value(), 'abbrev': msg_game } 
         }
-
     } else {
         console.log('No game specified, fetching twitch game...')
         const twitch_channel = await fetching.get_twitch_channel(channel);
         const twitch_game = await fetching.get_twitch_game(twitch_channel.data.data[0].game_id);
         const speedrun_game = await fetching.get_speedrungame_by_name(twitch_game.data.data[0].name);
         if (!db.has(speedrun_game.data.data[0].abbreviation)) {
-            console.log('Game not found in DB, adding...')
             db.set(speedrun_game.data.data[0].abbreviation + '.id', speedrun_game.data.data[0].id).write();
             return { 'game_id': speedrun_game.data.data[0].id, 'abbrev': speedrun_game.data.data[0].abbreviation };
         } else {
-            console.log('Game found in DB: ', speedrun_game.data.data[0].abbreviation, ' ', speedrun_game.data.data[0].id)
             return { 'game_id': speedrun_game.data.data[0].id, 'abbrev': speedrun_game.data.data[0].abbreviation };
         }
     }
 };
 
 const get_category = async (info_object) => {
-    let { channel, userstate, message, split_msg } = info_object;
+    let { channel, split_msg } = info_object;
 
     const { game_id, abbrev } = await get_game_id(info_object);
-    console.log('game_id: ', game_id)
     let msg_category = split_msg.length > 2 && split_msg.slice(2);
-    console.log('msg_category: ', msg_category);
     
     const adapter = new FileSync('./Private/game_id_list.json');
     const db = low(adapter);
@@ -84,7 +69,6 @@ const get_category = async (info_object) => {
             }
         });
     }
-    let fuse_shit;
     if (msg_category) {
         msg_category = split_msg.slice(2).join(' ')
         console.log('Category specified by user: ', msg_category)
