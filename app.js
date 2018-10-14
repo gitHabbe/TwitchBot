@@ -42,8 +42,8 @@ client.on('chat', async (channel, userstate, message, self) => {
             client.say(channel, wr_msg)
             break;
         case '!pb':
-            commands.get_pb(info_object)
-            .then(res => { client.say(channel, res) }).catch(err => { console.log('pb err') });
+            const pb_msg = commands.get_pb(info_object);
+            client.say(channel, pb_msg);
             break;
         case '!ilwr':
             commands.get_il_wr(info_object)

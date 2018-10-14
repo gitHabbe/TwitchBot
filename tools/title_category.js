@@ -6,19 +6,27 @@ const util = require('./util.js');
 
 
 const get_game_id = async (info_object) => {
-    let { channel, userstate, message, split_msg } = info_object;
+    let { channel, split_msg } = info_object;
     const msg_game = split_msg.length > 1 && split_msg[1];
     const adapter = new FileSync('./Private/game_id_list.json');
     const db = low(adapter);
     if (msg_game) {
         if (!db.has(msg_game + '.id').value()) {
-            console.log('Game not found in DB, fetching game...')
-            return fetching.get_speedrungame_by_abbreviation(msg_game)
-            .then(res => {
-                db.set(msg_game + '.id' , res.data.data[0].id).write()
-                console.log('res.data.data[0].id: ', res.data.data[0].id);
-                return { 'game_id': res.data.data[0].id, 'abbrev': res.data.data[0].abbreviation };
-            });
+            try {
+                const speed_game = await fetching.get_speedrungame_by_abbreviation(msg_game);
+                db.set(msg_game + '.id' , speed_game.data.data[0].id).write()
+                return { 'game_id': speed_game.data.data[0].id, 'abbrev': speed_game.data.data[0].abbreviation };
+            } catch (err) {
+                return "Game not found.";
+            }
+            // return fetching.get_speedrungame_by_abbreviation(msg_game)
+            //     .then(res => {
+            //         db.set(msg_game + '.id' , res.data.data[0].id).write()
+            //         return { 'game_id': res.data.data[0].id, 'abbrev': res.data.data[0].abbreviation };
+            //     })
+            //     .catch(err => {
+            //         return "Game not found.";
+            //     });
         } else {
             console.log('Game found in DB: ', msg_game);
             return { 'game_id': db.get(msg_game + '.id').value(), 'abbrev': msg_game } 
@@ -42,7 +50,8 @@ const get_game_id = async (info_object) => {
 
 const get_category = async (info_object) => {
     let { channel, userstate, message, split_msg } = info_object;
-    const { game_id, abbrev } = await get_game_id(info_object)
+
+    const { game_id, abbrev } = await get_game_id(info_object);
     console.log('game_id: ', game_id)
     let msg_category = split_msg.length > 2 && split_msg.slice(2);
     console.log('msg_category: ', msg_category);

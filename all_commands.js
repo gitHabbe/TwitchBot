@@ -12,16 +12,14 @@ const wr = require('./tools/fetch_wr.js');
 const pb = require('./tools/fetch_pb.js');
 
 const get_wr = async (info_object) => {
-    // let { channel, userstate, message, split_msg } = info_object;
     const game_id_and_category = await tg.set_game_and_category(info_object);
     info_object.fuse_hit = game_id_and_category.fuse_hit;
     info_object.game_id = game_id_and_category.game_id;
     info_object.category_id = game_id_and_category.category_id;
-    console.log("test 1");
     
-    const test = wr.fetch_wr(info_object)
+    const wr_msg = wr.fetch_wr(info_object)
 
-    return test
+    return wr_msg;
 };
 
 const get_pb = async (info_object) => {
