@@ -1,8 +1,8 @@
+const fs = require('fs');
 const low = require('lowdb');
 const FileSync = require('lowdb/adapters/FileSync');
 const axios = require('axios');
 const Twitter = require('twitter');
-const fs = require('fs');
 
 const fuse = require('./tools/fuse.js');
 const fetching = require('./tools/fetching.js');
@@ -12,15 +12,13 @@ const wr = require('./tools/fetch_wr.js');
 const pb = require('./tools/fetch_pb.js');
 
 const get_wr = async (info_object) => {
-    let { channel, userstate, message, split_msg } = info_object;
-    // info_object.channel = 'Wilko'
+    // let { channel, userstate, message, split_msg } = info_object;
     const game_id_and_category = await tg.set_game_and_category(info_object);
     info_object.fuse_hit = game_id_and_category.fuse_hit;
-    console.log('info_object.fuse_hit: ', info_object.fuse_hit);
     info_object.game_id = game_id_and_category.game_id;
-    console.log('info_object.game_id: ', info_object.game_id);
-    info_object.category_id = game_id_and_category.category_id
-    console.log('info_object.category_id: ', info_object.category_id);
+    info_object.category_id = game_id_and_category.category_id;
+    console.log("test 1");
+    
     const test = wr.fetch_wr(info_object)
 
     return test
@@ -29,12 +27,9 @@ const get_wr = async (info_object) => {
 const get_pb = async (info_object) => {
     let { channel, userstate, message, split_msg } = info_object;
     console.log(info_object.split_msg);
-    // info_object.channel = 'Fuzzyness'
     if (split_msg.length === 1) {
-        console.log('IF');
         info_object.runner = channel;
     } else {
-        console.log('ELSE');
         info_object.channel = info_object.split_msg[1];
         info_object.split_msg.splice(1, 1)
         console.log(info_object.split_msg);
@@ -81,9 +76,7 @@ const get_il_pb = async (info_object) => {
     runner_msg = split_msg[1];
     info_object.split_msg.splice(1, 1);
     let speedrunner_list = await fetching.get_speedrunner(runner_msg)
-    // console.log('speedrunner_list.data: ', speedrunner_list.data);
     speedrunner = speedrunner_list.data.data.find(runner => runner.names.international.toLowerCase() === runner_msg.toLowerCase())
-    // console.log('speedrunner ', speedrunner);
     
     
     console.log('info_object.split_msg: ', info_object.split_msg);
@@ -91,7 +84,6 @@ const get_il_pb = async (info_object) => {
     const level_list = await fetching.fetch_game_levels(game.game_id);
     const level_list_names = level_list.data.data.map((level, index) => {
         let level_name = level.name
-        // console.log(level_name)
         if (level_name.indexOf('(') > -1) {
             level_name = level_name.replace('(', '')
             level_name = level_name.replace(')', '')
@@ -184,8 +176,6 @@ const get_uptime = async (info_object) => {
     const time_string = util.secondsToString(seconds_ago)
     console.log(time_string);
     return time_string;
-    // console.log(uptime_date);
-    // console.log(twitch_channel.data.data);
 };
 
 const get_title = async (info_object) => {
@@ -215,7 +205,7 @@ const set_highlight = async (info_object) => {
     const highlight_url = user_video_list.data.data[0].url
     const uptime_date = new Date(twitch_channel.data.data[0].started_at);
     const seconds_ago = Math.floor(((new Date() - uptime_date) / 1000));
-    if (!db.has(channel).value()) db.set(channel, []).write()
+    if (!db.has(channel).value()) db.set(channel, []).write();
     if (!db.has(channel + '.highlights').value()) db.set(channel + '.highlights', []).write()
 
     if (!db.get(channel + '.highlights').find({hl_name: message.slice(4)}).value()) {
@@ -231,9 +221,9 @@ const set_highlight = async (info_object) => {
             return `Max highlight limit reached (15), please delete old highlights.` +
             `Highlight still created: ${message.slice(4)}`
         }
-        return `Highlight created: ${message.slice(4)}`
+        return `Timestamp created: ${message.slice(4)}`
     } else {
-        return 'Highlight already exists'
+        return 'Timestamp already exists'
     }
 
 };
@@ -549,11 +539,11 @@ const slots = async (info_object) => {
         rolls.push(randomNr)
     }
     var sentence = '';
-    if (userstate['display-name'].toLowerCase() === 'habbe') {
-        rolls[0] = 'Jebatied';
-        rolls[1] = 'Jebatied';
-        rolls[2] = 'Jebatied';
-    }
+    // if (userstate['display-name'].toLowerCase() === 'habbe') {
+    //     rolls[0] = 'Jebatied';
+    //     rolls[1] = 'Jebatied';
+    //     rolls[2] = 'Jebatied';
+    // }
     for (var i = 0; i < rolls.length; i++) {
         sentence += emotes[rolls[i]] + ' | ';
     }

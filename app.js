@@ -16,7 +16,7 @@ client.on('connected', (address, port) => {
 })
 
 // client.on('join', (channel, username, self) => {
-//     console.log(username + ' joined!');
+//     console.log(username + ' joined.');
 // })
 // client.on('part', (channel, username, self) => {
 //     console.log(username + ' left.');
@@ -25,7 +25,7 @@ client.on('connected', (address, port) => {
 client.on("resub", (channel, username, months, message, userstate, methods) => {
     client.say(channel, "MY MAN! " + username.toUpperCase())
 });
-client.on('chat', (channel, userstate, message, self) => {
+client.on('chat', async (channel, userstate, message, self) => {
 
     const split_msg = message.split(' ');
     let info_object = {
@@ -38,9 +38,8 @@ client.on('chat', (channel, userstate, message, self) => {
     if (self) return;
     switch (split_msg[0]) {
         case '!wr':
-            commands.get_wr(info_object)
-            .then(res => { client.say(channel, res) })
-            .catch(err => { console.log('wr err') });
+            const wr_msg = await commands.get_wr(info_object);
+            client.say(channel, wr_msg)
             break;
         case '!pb':
             commands.get_pb(info_object)
@@ -86,22 +85,26 @@ client.on('chat', (channel, userstate, message, self) => {
             .catch(err => { console.log(err) });
             break;
         case '!hl':
+        case '!ts':
             commands.set_highlight(info_object)
             .then(res => { client.say(channel, res) })
             .catch(err => { console.log('HL err') })
             break;
         case '!hls':
+        case '!tss':
             commands.get_highlights(info_object)
             .then(res => { client.say(channel, res) })
             .catch(err => { console.log(err) });
             break;
         case '!gethl':
+        case '!getts':
             commands.get_target_highlight(info_object)
             .then(res => { client.say(channel, res) })
             .catch(err => { client.say(channel, 'Cannot find highlight. Use !hls to list your highlights.') });
             // console.log(target_highlight);
             break;
         case '!dhl':
+        case '!dts':
             commands.delete_highlight(info_object)
             .then(res => { client.say(channel, res) })
             .catch(err => { console.log(err) });

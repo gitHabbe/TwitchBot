@@ -92,21 +92,17 @@ const get_category = async (info_object) => {
         fuse_hit: fuse_hit,
         game_id: game_id,
         category_id: fuse_hit.category_id
-        // speedrun_game: speedrun_game
     }
 };
 
 const set_game_and_category = async (info_object) => {
-    let { channel, userstate, message, split_msg } = info_object;
-    const msg_game = split_msg.length > 1 && split_msg[1];
-    const msg_category = split_msg.length > 2 && split_msg[2];
     const game_id_and_category = await get_category(info_object);
 
     return game_id_and_category
 };
 
 module.exports = {
-    get_game_id: get_game_id,
-    get_category: get_category,
-    set_game_and_category: set_game_and_category
+    get_game_id,
+    get_category,
+    set_game_and_category
 }
