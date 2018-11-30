@@ -13,13 +13,11 @@ const pb = require('./tools/fetch_pb.js');
 
 const get_wr = async (info_object) => {
     const game_id_and_category = await tg.set_game_and_category(info_object);
-    // console.log("game_id_and_category: ", game_id_and_category)
     info_object.fuse_hit = game_id_and_category.fuse_hit;
     info_object.game_id = game_id_and_category.game_id;
     info_object.category_id = game_id_and_category.category_id;
     const wr_msg = await wr.fetch_wr(info_object);
-    console.log("wr_msg: ", wr_msg)
-    // const wr_msg = "sadf"
+    console.log("wr_msg: ", wr_msg);
 ;    return wr_msg;
 };
 
@@ -303,29 +301,42 @@ const get_youtube_info = async (info_object, short = false) => {
         yt_link = split_msg.find(word => word.indexOf('https://www.youtube.com') !== -1)
     }
     const yt_id = re.exec(yt_link)[1]
-    const yt_video = await axios.get(`https://www.googleapis.com/youtube/v3/videos?id=${yt_id}&key=${process.env.YT_API_KEY}
-        &part=snippet,contentDetails,statistics,status`)
+    let yt_video;
+    try {
+        yt_video = await axios.get(`https://www.googleapis.com/youtube/v3/videos`, { "params": {
+            id: yt_id,
+            part: "snippet,contentDetails,statistics,status",
+            key: process.env.YT_API_KEY
+        }});
+        // console.log('yt_video: ', yt_video);
+    } catch (err) {
+        console.log(err);
+    }
+    // console.log('yt_video: ', yt_video);
     const {viewCount, likeCount, dislikeCount} = yt_video.data.items[0].statistics;
     const likePercent = Math.round((parseInt(likeCount) / (parseInt(likeCount) + parseInt(dislikeCount))) * 100)
     const title = yt_video.data.items[0].snippet.title;
+    console.log('title: ', title);
     re = /[A-Z][A-Z](\d*H+)*(\d*M+)*(\d*S)/;
     const duration = yt_video.data.items[0].contentDetails.duration;
-    console.log(duration)
-    let grouped_dur = re.exec(duration).slice(1, 4);
-    console.log(grouped_dur)
-    grouped_dur = grouped_dur.map(time => {
-        if (time) {
-            if (time.length === 2) {
-                return '0' + time.slice(0, -1) + ':';
-            } else {
-                return time.slice(0, -1) + ':';
-            }
-        }
-    })
-    grouped_dur = grouped_dur.filter(num => num !== undefined)
-    grouped_dur = grouped_dur.join('').slice(0, -1)
+    let formated_duration = util.yt_duration_to_string(duration);
+    formated_duration = util.secondsToString2(formated_duration);
+    console.log('formated_duration: ', formated_duration);
+    // let grouped_dur = re.exec(duration).slice(1, 4);
+    // console.log('grouped_dur: ', grouped_dur);
+    // grouped_dur = grouped_dur.map(time => {
+    //     if (time) {
+    //         if (time.length === 2) {
+    //             return '0' + time.slice(0, -1) + ':';
+    //         } else {
+    //             return time.slice(0, -1) + ':';
+    //         }
+    //     }
+    // })
+    // grouped_dur = grouped_dur.filter(num => num !== undefined)
+    // grouped_dur = grouped_dur.join('').slice(0, -1)
 
-    return `[${grouped_dur}, ${viewCount} views, ${likePercent}% likes] ${title}`
+    return `[${formated_duration}, ${viewCount} views, ${likePercent}% likes] ${title}`
 };
 
 const get_tweet_info = async (info_object) => {

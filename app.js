@@ -5,7 +5,6 @@ const tc = require('./tools/title_category')
 const options = require('./Private/options.js');
 const FileSync = require('lowdb/adapters/FileSync');
 const low = require('lowdb');
-// const asdf = require('./')
 
 var client = new tmi.client(options.options);
 
@@ -13,18 +12,19 @@ client.connect();
 
 client.on('connected', (address, port) => {
     console.log(`CONNECTED: ${address}:${port}`);
-})
+});
 
-// client.on('join', (channel, username, self) => {
-//     console.log(username + ' joined.');
-// })
-// client.on('part', (channel, username, self) => {
-//     console.log(username + ' left.');
-// })
+client.on('join', (channel, username, self) => {
+    console.log("+" + username);
+});
+client.on('part', (channel, username, self) => {
+    console.log("-" + username);
+});
 
 client.on("resub", (channel, username, months, message, userstate, methods) => {
     client.say(channel, "MY MAN! " + username.toUpperCase())
 });
+
 client.on('chat', async (channel, userstate, message, self) => {
 
     const split_msg = message.split(' ');
@@ -35,127 +35,111 @@ client.on('chat', async (channel, userstate, message, self) => {
         split_msg,
         self
     };
+    let res;
     if (self) return;
     switch (split_msg[0]) {
         case '!wr':
-            const wr_msg = await commands.get_wr(info_object);
-            client.say(channel, wr_msg);
+            res = await commands.get_wr(info_object);
+            client.say(channel, res);
             break;
         case '!pb':
-            const pb_msg = await commands.get_pb(info_object);
-            client.say(channel, pb_msg);
+            res = await commands.get_pb(info_object);
+            client.say(channel, res);
             break;
         case '!ilwr':
-            commands.get_il_wr(info_object)
-            .then(res => { client.say(channel, res) }).catch(err => { console.log(err) })
+            res = await commands.get_il_wr(info_object);
+            client.say(channel, res);
             break;
         case '!ilpb':
-            commands.get_il_pb(info_object)
-            .then(res => { client.say(channel, res) }).catch(err => { console.log(err) })
+            res = await commands.get_il_pb(info_object);
+            client.say(channel, res);
             break;
         case '!enable':
-            commands.enable_component(info_object)
-            .then(res => { client.say(channel, res) }).catch(err => { console.log(err) })
+            res = await commands.enable_component(info_object);
+            client.say(channel, res);
             break;
         case '!disable':
-            commands.disable_component(info_object)
-            .then(res => { client.say(channel, res) }).catch(err => { console.log(err) })
+            res = await commands.disable_component(info_object);
+            client.say(channel, res);
             break;
         case '!addcmd':
         case '!newcmd':
-            commands.new_cc(info_object)
-            .then(res => { client.say(channel, res) })
-            .catch(err => { console.log('New CC err') })
+            res = await commands.new_cc(info_object);
+            client.say(channel, res);
             break;
         case '!deletecmd':
         case '!removecmd':
         case '!delcmd':
-            commands.delete_cc(info_object)
-            .then(res => { client.say(channel, res) })
-            .catch(err => { console.log('Delete CC err') })
+            res = await commands.delete_cc(info_object);
+            client.say(channel, res);
             break;
         case '!uptime':
-            commands.get_uptime(info_object)
-            .then(res => { client.say(channel, res) })
-            .catch(err => { client.say(channel, info_object.channel + ' is not online') });
+            res = await commands.get_uptime(info_object);
+            client.say(channel, res);
             break;
         case '!title':
-            commands.get_title(info_object)
-            .then(res => { client.say(channel, res) })
-            .catch(err => { console.log(err) });
+            res = await commands.get_title(info_object);
+            client.say(channel, res);
             break;
         case '!hl':
         case '!ts':
-            commands.set_highlight(info_object)
-            .then(res => { client.say(channel, res) })
-            .catch(err => { console.log('HL err') })
+            res = await commands.set_highlight(info_object);
+            client.say(channel, res);
             break;
         case '!hls':
         case '!tslist':
         case '!tss':
-            commands.get_highlights(info_object)
-            .then(res => { client.say(channel, res) })
-            .catch(err => { console.log(err) });
+            res = await commands.get_highlights(info_object);
+            client.say(channel, res);
             break;
         case '!gethl':
         case '!getts':
-            commands.get_target_highlight(info_object)
-            .then(res => { client.say(channel, res) })
-            .catch(err => { client.say(channel, 'Cannot find highlight. Use !tslist to list your highlights.') });
-            // console.log(target_highlight);
+            res = await commands.get_target_highlight(info_object);
+            client.say(channel, res);
             break;
         case '!dhl':
         case '!dts':
-            commands.delete_highlight(info_object)
-            .then(res => { client.say(channel, res) })
-            .catch(err => { console.log(err) });
+            res = await commands.delete_highlight(info_object);
+            client.say(channel, res);
             break;
         case '!followage':
-            commands.get_followage(info_object)
-            .then(res => { client.say(channel, res) })
-            .catch(err => { client.say(channel, 'Cannot find followage') });
+            res = await commands.get_followage(info_object);
+            client.say(channel, res);
             break;
         case '!slots':
-            commands.slots(info_object)
-            .then(res => { client.say(channel, res) }).catch(err => { console.log(err) })
+            res = await commands.slots(info_object);
+            client.say(channel, res);
             break;
         case '!addperm':
-            commands.add_permission(info_object)
-            .then(res => { client.say(channel, res) }).catch(err => { console.log(err) })
+            res = await commands.add_permission(info_object);
+            client.say(channel, res);
             break;
         case '!getperm':
-            commands.list_permission(info_object, true)
-            .then(res => { client.say(channel, res.names_string) }).catch(err => { console.log(err) })
+            res = await commands.list_permission(info_object, true);
+            client.say(channel, res.names_string);
             break;
         case '!time':
-            client.say(channel, 'Doesnt work yet')
-            // commands.get_timezone(info_object)
-            // .then(res => { client.say(channel, res) }).catch(err => { console.log(err) })
+            client.say(channel, 'Doesnt work yet');
             break;
         case '!connect':
         case '!join':
-            commands.join_channel(info_object)
-            .then(res => { client.say(channel, res) })
-            .catch(err => { console.log(err) })
+            res = commands.join_channel(info_object);
+            client.say(channel, res);
             break;
-        
         case '!disconnect':
         case '!part':
         case '!leave':
-            commands.leave_channel(info_object)
-            .then(res => { client.say(channel, res) })
-            .catch(err => { console.log(err) })
+            res = commands.leave_channel(info_object);
+            client.say(channel, res);
             break;
         case '!help':
-            commands.help_command(info_object)
-            .then(res => { client.say(channel, res) }).catch(err => { console.log(err) })
+            res = commands.help_command(info_object);
+            client.say(channel, res);
             break;
         default:
-        // console.log('DEFAULT');
             break;
     }
     if (split_msg[0].startsWith("!")) {
-        console.log('INSIDE')
         const adapter = new FileSync('./Private/database.json');
         const db = low(adapter);
         if (db.has("reserved-words").value()) {
@@ -167,17 +151,15 @@ client.on('chat', async (channel, userstate, message, self) => {
             }
             console.log('reserved_bool: ', reserved_bool);  
         }
-        console.log('AFTER IF')
     }
     if (message.indexOf('https://www.youtube.com') > -1) {
-        commands.get_youtube_info(info_object)
-        .then(res => { client.say(channel, res) }).catch(err => { console.log(err) })
+        res = await commands.get_youtube_info(info_object);
+        client.say(channel, res);
     } else if (message.indexOf('https://youtu.be') > -1) {
-        commands.get_youtube_info(info_object, true)
-        .then(res => { client.say(channel, res) }).catch(err => { console.log(err) })
+        res = await commands.get_youtube_info(info_object, true);
+        client.say(channel, res);
     } else if (message.indexOf('twitter.com/') > -1) {
-        console.log('twitter')
-        commands.get_tweet_info(info_object)
-        .then(res => { client.say(channel, res) }).catch(err => { console.log(err) })
+        res = await commands.get_tweet_info(info_object);
+        client.say(channel, res);
     }
-})
+});

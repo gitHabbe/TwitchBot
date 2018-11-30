@@ -89,10 +89,45 @@ const get_correct_category = (category_list, title) => {
     return { uri: get_game_link(found_category, 'leaderboard'), name: found_category.name }
 };
 
+function yt_duration_to_string(duration) {
+    var a = duration.match(/\d+/g);
+
+    if (duration.indexOf('M') >= 0 && duration.indexOf('H') == -1 && duration.indexOf('S') == -1) {
+        a = [0, a[0], 0];
+    }
+
+    if (duration.indexOf('H') >= 0 && duration.indexOf('M') == -1) {
+        a = [a[0], 0, a[1]];
+    }
+    if (duration.indexOf('H') >= 0 && duration.indexOf('M') == -1 && duration.indexOf('S') == -1) {
+        a = [a[0], 0, 0];
+    }
+
+    duration = 0;
+
+    if (a.length == 3) {
+        duration = duration + parseInt(a[0]) * 3600;
+        duration = duration + parseInt(a[1]) * 60;
+        duration = duration + parseInt(a[2]);
+    }
+
+    if (a.length == 2) {
+        duration = duration + parseInt(a[0]) * 60;
+        duration = duration + parseInt(a[1]);
+    }
+
+    if (a.length == 1) {
+        duration = duration + parseInt(a[0]);
+    }
+    console.log(duration);
+    return duration;
+}
+
 module.exports = {
-    get_game_link: get_game_link,
-    get_correct_category: get_correct_category,
-    secondsToString: secondsToString,
-    secondsToString2: secondsToString2,
-    millisecondsToString: millisecondsToString
+    get_game_link,
+    get_correct_category,
+    secondsToString,
+    secondsToString2,
+    millisecondsToString,
+    yt_duration_to_string
 }

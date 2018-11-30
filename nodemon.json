@@ -1,8 +1,8 @@
 {
   "verbose": true,
   "ignore": [
-    "./Private/database.json",
-    "./Private/game_id_list.json",
-    "./Private/options.json"
+    "Private/database.json",
+    "Private/game_id_list.json",
+    "Private/options.json"
   ]
 }
