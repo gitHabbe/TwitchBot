@@ -91,6 +91,7 @@ client.on('chat', async (channel, userstate, message, self) => {
             .catch(err => { console.log('HL err') })
             break;
         case '!hls':
+        case '!tslist':
         case '!tss':
             commands.get_highlights(info_object)
             .then(res => { client.say(channel, res) })
@@ -100,7 +101,7 @@ client.on('chat', async (channel, userstate, message, self) => {
         case '!getts':
             commands.get_target_highlight(info_object)
             .then(res => { client.say(channel, res) })
-            .catch(err => { client.say(channel, 'Cannot find highlight. Use !hls to list your highlights.') });
+            .catch(err => { client.say(channel, 'Cannot find highlight. Use !tslist to list your highlights.') });
             // console.log(target_highlight);
             break;
         case '!dhl':

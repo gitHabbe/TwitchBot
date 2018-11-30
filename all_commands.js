@@ -277,6 +277,7 @@ const delete_highlight = async (info_object) => {
 const get_followage = async (info_object) => {
     let { channel, message, userstate, split_msg } = info_object;
     let follower = userstate['user-id'];
+    let follower_name = userstate['display-name'];
     const streamer = await fetching.get_twitch_channel(channel);
     const streamer_id = streamer.data.data[0].user_id;
 
@@ -287,9 +288,9 @@ const get_followage = async (info_object) => {
     if (followage_info.data.data.length >= 1) {
         const follow_date = new Date(followage_info.data.data[0].followed_at)
         const days_ago = Math.floor(((new Date() - follow_date) / 86400000))
-        return `${follower} followage: ${days_ago} days`;
+        return `${follower_name} followage: ${days_ago} days`;
     }
-    return `Followage of ${follower} not found.`;
+    return `Followage of ${follower_name} not found.`;
 };
 
 const get_youtube_info = async (info_object, short = false) => {
