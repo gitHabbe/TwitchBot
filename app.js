@@ -1,179 +1,323 @@
-require('dotenv').load();
-const tmi = require('tmi.js');
-const commands = require('./all_commands.js');
-const tc = require('./tools/title_category')
-const options = require('./Private/options.js');
-const FileSync = require('lowdb/adapters/FileSync');
-const low = require('lowdb');
-// const asdf = require('./')
+require("dotenv").load();
+const tmi = require("tmi.js");
+const commands = require("./all_commands.js");
+const options = require("./options.js");
+const FileSync = require("lowdb/adapters/FileSync");
+const low = require("lowdb");
 
-var client = new tmi.client(options.options);
+var client = new tmi.client(options);
 
 client.connect();
 
-client.on('connected', (address, port) => {
+client.on("connected", (address, port) => {
     console.log(`CONNECTED: ${address}:${port}`);
-})
+});
 
-// client.on('join', (channel, username, self) => {
-//     console.log(username + ' joined!');
-// })
-// client.on('part', (channel, username, self) => {
-//     console.log(username + ' left.');
-// })
+client.on("join", (channel, username, self) => {
+    console.log(username + " joined!");
+});
+client.on("part", (channel, username, self) => {
+    console.log(username + " left.");
+});
 
 client.on("resub", (channel, username, months, message, userstate, methods) => {
-    client.say(channel, "MY MAN! " + username.toUpperCase())
+    client.say(channel, "MY MAN! " + username.toUpperCase());
 });
-client.on('chat', (channel, userstate, message, self) => {
-
-    const split_msg = message.split(' ');
+client.on("chat", (channel, userstate, message, self) => {
+    const split_msg = message.split(" ");
     let info_object = {
         channel: channel.slice(1),
-        userstate: userstate,
-        message: message,
-        split_msg: split_msg,
-        self: self
+        userstate,
+        message,
+        split_msg,
+        self
     };
     if (self) return;
     switch (split_msg[0]) {
-        case '!wr':
-            commands.get_wr(info_object)
-            .then(res => { client.say(channel, res) })
-            .catch(err => { console.log('wr err') });
+        case "!wr":
+            commands
+                .get_wr(info_object)
+                .then(res => {
+                    client.say(channel, res);
+                })
+                .catch(err => {
+                    console.log("wr err");
+                });
             break;
-        case '!pb':
-            commands.get_pb(info_object)
-            .then(res => { client.say(channel, res) }).catch(err => { console.log('pb err') });
+        case "!pb":
+            commands
+                .get_pb(info_object)
+                .then(res => {
+                    client.say(channel, res);
+                })
+                .catch(err => {
+                    console.log("pb err");
+                });
             break;
-        case '!ilwr':
-            commands.get_il_wr(info_object)
-            .then(res => { client.say(channel, res) }).catch(err => { console.log(err) })
+        case "!ilwr":
+            commands
+                .get_il_wr(info_object)
+                .then(res => {
+                    client.say(channel, res);
+                })
+                .catch(err => {
+                    console.log(err);
+                });
             break;
-        case '!ilpb':
-            commands.get_il_pb(info_object)
-            .then(res => { client.say(channel, res) }).catch(err => { console.log(err) })
+        case "!ilpb":
+            commands
+                .get_il_pb(info_object)
+                .then(res => {
+                    client.say(channel, res);
+                })
+                .catch(err => {
+                    console.log(err);
+                });
             break;
-        case '!enable':
-            commands.enable_component(info_object)
-            .then(res => { client.say(channel, res) }).catch(err => { console.log(err) })
+        case "!enable":
+            commands
+                .enable_component(info_object)
+                .then(res => {
+                    client.say(channel, res);
+                })
+                .catch(err => {
+                    console.log(err);
+                });
             break;
-        case '!disable':
-            commands.disable_component(info_object)
-            .then(res => { client.say(channel, res) }).catch(err => { console.log(err) })
+        case "!disable":
+            commands
+                .disable_component(info_object)
+                .then(res => {
+                    client.say(channel, res);
+                })
+                .catch(err => {
+                    console.log(err);
+                });
             break;
-        case '!addcmd':
-        case '!newcmd':
-            commands.new_cc(info_object)
-            .then(res => { client.say(channel, res) })
-            .catch(err => { console.log('New CC err') })
+        case "!addcmd":
+        case "!newcmd":
+            commands
+                .new_cc(info_object)
+                .then(res => {
+                    client.say(channel, res);
+                })
+                .catch(err => {
+                    console.log("New CC err");
+                });
             break;
-        case '!deletecmd':
-        case '!removecmd':
-        case '!delcmd':
-            commands.delete_cc(info_object)
-            .then(res => { client.say(channel, res) })
-            .catch(err => { console.log('Delete CC err') })
+        case "!deletecmd":
+        case "!removecmd":
+        case "!delcmd":
+            commands
+                .delete_cc(info_object)
+                .then(res => {
+                    client.say(channel, res);
+                })
+                .catch(err => {
+                    console.log("Delete CC err");
+                });
             break;
-        case '!uptime':
-            commands.get_uptime(info_object)
-            .then(res => { client.say(channel, res) })
-            .catch(err => { client.say(channel, info_object.channel + ' is not online') });
+        case "!uptime":
+            commands
+                .get_uptime(info_object)
+                .then(res => {
+                    client.say(channel, res);
+                })
+                .catch(err => {
+                    client.say(channel, info_object.channel + " is not online");
+                });
             break;
-        case '!title':
-            commands.get_title(info_object)
-            .then(res => { client.say(channel, res) })
-            .catch(err => { console.log(err) });
+        case "!title":
+            commands
+                .get_title(info_object)
+                .then(res => {
+                    client.say(channel, res);
+                })
+                .catch(err => {
+                    console.log(err);
+                });
             break;
-        case '!hl':
-            commands.set_highlight(info_object)
-            .then(res => { client.say(channel, res) })
-            .catch(err => { console.log('HL err') })
+        case "!hl":
+            commands
+                .set_highlight(info_object)
+                .then(res => {
+                    client.say(channel, res);
+                })
+                .catch(err => {
+                    console.log("HL err");
+                });
             break;
-        case '!hls':
-            commands.get_highlights(info_object)
-            .then(res => { client.say(channel, res) })
-            .catch(err => { console.log(err) });
+        case "!hls":
+            commands
+                .get_highlights(info_object)
+                .then(res => {
+                    client.say(channel, res);
+                })
+                .catch(err => {
+                    console.log(err);
+                });
             break;
-        case '!gethl':
-            commands.get_target_highlight(info_object)
-            .then(res => { client.say(channel, res) })
-            .catch(err => { client.say(channel, 'Cannot find highlight') });
+        case "!gethl":
+            commands
+                .get_target_highlight(info_object)
+                .then(res => {
+                    client.say(channel, res);
+                })
+                .catch(err => {
+                    client.say(channel, "Cannot find highlight");
+                });
             // console.log(target_highlight);
             break;
-        case '!dhl':
-            commands.delete_highlight(info_object)
-            .then(res => { client.say(channel, res) })
-            .catch(err => { console.log(err) });
+        case "!dhl":
+            commands
+                .delete_highlight(info_object)
+                .then(res => {
+                    client.say(channel, res);
+                })
+                .catch(err => {
+                    console.log(err);
+                });
             break;
-        case '!followage':
-            commands.get_followage(info_object)
-            .then(res => { client.say(channel, userstate['display-name'] + ' followage: ' + res + ' days') })
-            .catch(err => { client.say(channel, 'Cannot find followage') });
+        case "!followage":
+            commands
+                .get_followage(info_object)
+                .then(res => {
+                    client.say(
+                        channel,
+                        userstate["display-name"] +
+                            " followage: " +
+                            res +
+                            " days"
+                    );
+                })
+                .catch(err => {
+                    client.say(channel, "Cannot find followage");
+                });
             break;
-        case '!slots':
-            commands.slots(info_object)
-            .then(res => { client.say(channel, res) }).catch(err => { console.log(err) })
+        case "!slots":
+            commands
+                .slots(info_object)
+                .then(res => {
+                    client.say(channel, res);
+                })
+                .catch(err => {
+                    console.log(err);
+                });
             break;
-        case '!addperm':
-            commands.add_permission(info_object)
-            .then(res => { client.say(channel, res) }).catch(err => { console.log(err) })
+        case "!addperm":
+            commands
+                .add_permission(info_object)
+                .then(res => {
+                    client.say(channel, res);
+                })
+                .catch(err => {
+                    console.log(err);
+                });
             break;
-        case '!getperm':
-            commands.list_permission(info_object, true)
-            .then(res => { client.say(channel, res.names_string) }).catch(err => { console.log(err) })
+        case "!getperm":
+            commands
+                .list_permission(info_object, true)
+                .then(res => {
+                    client.say(channel, res.names_string);
+                })
+                .catch(err => {
+                    console.log(err);
+                });
             break;
-        case '!time':
-            client.say(channel, 'Doesnt work yet')
+        case "!time":
+            client.say(channel, "Doesnt work yet");
             // commands.get_timezone(info_object)
             // .then(res => { client.say(channel, res) }).catch(err => { console.log(err) })
             break;
-        case '!connect':
-        case '!join':
-            commands.join_channel(info_object)
-            .then(res => { client.say(channel, res) })
-            .catch(err => { console.log(err) })
+        case "!connect":
+        case "!join":
+            commands
+                .join_channel(info_object)
+                .then(res => {
+                    client.say(channel, res);
+                })
+                .catch(err => {
+                    console.log(err);
+                });
             break;
-        
-        case '!disconnect':
-        case '!part':
-        case '!leave':
-            commands.leave_channel(info_object)
-            .then(res => { client.say(channel, res) })
-            .catch(err => { console.log(err) })
+
+        case "!disconnect":
+        case "!part":
+        case "!leave":
+            commands
+                .leave_channel(info_object)
+                .then(res => {
+                    client.say(channel, res);
+                })
+                .catch(err => {
+                    console.log(err);
+                });
             break;
-        case '!help':
-            commands.help_command(info_object)
-            .then(res => { client.say(channel, res) }).catch(err => { console.log(err) })
+        case "!help":
+            commands
+                .help_command(info_object)
+                .then(res => {
+                    client.say(channel, res);
+                })
+                .catch(err => {
+                    console.log(err);
+                });
             break;
         default:
-        // console.log('DEFAULT');
+            // console.log('DEFAULT');
             break;
     }
     if (split_msg[0].startsWith("!")) {
-        console.log('INSIDE')
-        const adapter = new FileSync('./Private/database.json');
+        console.log("INSIDE");
+        const adapter = new FileSync("./Private/database.json");
         const db = low(adapter);
         if (db.has("reserved-words").value()) {
-            const reserved_bool = db.get("reserved-words").value().indexOf(split_msg[0]) >= 0;
+            const reserved_bool =
+                db
+                    .get("reserved-words")
+                    .value()
+                    .indexOf(split_msg[0]) >= 0;
             if (!reserved_bool) {
-                commands.check_cc(info_object)
-                .then(res => { client.say(channel, res) })
-                .catch(err => { console.log(err) })
+                commands
+                    .check_cc(info_object)
+                    .then(res => {
+                        client.say(channel, res);
+                    })
+                    .catch(err => {
+                        console.log(err);
+                    });
             }
-            console.log('reserved_bool: ', reserved_bool);  
+            console.log("reserved_bool: ", reserved_bool);
         }
-        console.log('AFTER IF')
+        console.log("AFTER IF");
     }
-    if (message.indexOf('https://www.youtube.com') > -1) {
-        commands.get_youtube_info(info_object)
-        .then(res => { client.say(channel, res) }).catch(err => { console.log(err) })
-    } else if (message.indexOf('https://youtu.be') > -1) {
-        commands.get_youtube_info(info_object, true)
-        .then(res => { client.say(channel, res) }).catch(err => { console.log(err) })
-    } else if (message.indexOf('twitter.com/') > -1) {
-        console.log('twitter')
-        commands.get_tweet_info(info_object)
-        .then(res => { client.say(channel, res) }).catch(err => { console.log(err) })
+    if (message.indexOf("https://www.youtube.com") > -1) {
+        commands
+            .get_youtube_info(info_object)
+            .then(res => {
+                client.say(channel, res);
+            })
+            .catch(err => {
+                console.log(err);
+            });
+    } else if (message.indexOf("https://youtu.be") > -1) {
+        commands
+            .get_youtube_info(info_object, true)
+            .then(res => {
+                client.say(channel, res);
+            })
+            .catch(err => {
+                console.log(err);
+            });
+    } else if (message.indexOf("twitter.com/") > -1) {
+        console.log("twitter");
+        commands
+            .get_tweet_info(info_object)
+            .then(res => {
+                client.say(channel, res);
+            })
+            .catch(err => {
+                console.log(err);
+            });
     }
-})
+});
