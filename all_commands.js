@@ -137,7 +137,7 @@ const new_cc = async info_object => {
     const permission = await get_permission(info_object);
     if (!permission) return "Permission denied";
 
-    const adapter = new FileSync("./Private/database.json");
+    const adapter = new FileSync("./private/database.json");
     const db = low(adapter);
 
     const cmd_text = split_msg.slice(2).join(" ");
@@ -178,7 +178,7 @@ const new_cc = async info_object => {
 const check_cc = async info_object => {
     let { channel, message, userstate, split_msg } = info_object;
 
-    const adapter = new FileSync("./Private/database.json");
+    const adapter = new FileSync("./private/database.json");
     const db = low(adapter);
 
     let test = db
@@ -195,7 +195,7 @@ const delete_cc = async info_object => {
     const permission = await get_permission(info_object);
     if (!permission) return "Permission denied";
 
-    const adapter = new FileSync("./Private/database.json");
+    const adapter = new FileSync("./private/database.json");
     const db = low(adapter);
 
     if (
@@ -237,7 +237,7 @@ const set_highlight = async info_object => {
     const permission = await get_permission(info_object);
     if (!permission) return "Permission denied";
 
-    const adapter = new FileSync("./Private/database.json");
+    const adapter = new FileSync("./private/database.json");
     const db = low(adapter);
     // channel = 'Wilko'
     const twitch_channel = await fetching.get_twitch_channel(channel);
@@ -277,7 +277,7 @@ const set_highlight = async info_object => {
 
 const get_highlights = async info_object => {
     let { channel, message, userstate } = info_object;
-    const adapter = new FileSync("./Private/database.json");
+    const adapter = new FileSync("./private/database.json");
     const db = low(adapter);
     const all_states = db.getState();
     // console.log(all_states[channel])
@@ -296,7 +296,7 @@ const get_highlights = async info_object => {
 
 const get_target_highlight = async info_object => {
     let { channel, message, userstate } = info_object;
-    const adapter = new FileSync("./Private/database.json");
+    const adapter = new FileSync("./private/database.json");
     const db = low(adapter);
     const target_highlight = message.slice(7);
     const all_states = db.getState();
@@ -320,7 +320,7 @@ const delete_highlight = async info_object => {
     if (!permission) return "Permission denied";
 
     const target_highlight = message.slice(5);
-    const adapter = new FileSync("./Private/database.json");
+    const adapter = new FileSync("./private/database.json");
     const db = low(adapter);
 
     if (target_highlight === "all") {
@@ -434,7 +434,7 @@ const add_permission = async info_object => {
     console.log("PERMISSION GRANTED!");
     if (!split_msg[1]) return "No user specified";
 
-    const adapter = new FileSync("./Private/database.json");
+    const adapter = new FileSync("./private/database.json");
     const db = low(adapter);
 
     if (!db.has(channel).value()) db.set(channel, {}).write();
@@ -461,7 +461,7 @@ const add_permission = async info_object => {
 
 const list_permission = async info_object => {
     let { channel, message, userstate, split_msg } = info_object;
-    const adapter = new FileSync("./Private/database.json");
+    const adapter = new FileSync("./private/database.json");
     const db = low(adapter);
 
     if (!db.has(channel).value()) db.set(channel, {}).write();
@@ -531,11 +531,11 @@ const join_channel = async info_object => {
     let { channel, message, userstate, split_msg } = info_object;
     if (channel != "habbe2") return;
 
-    const adapter = new FileSync("./Private/database.json");
+    const adapter = new FileSync("./private/database.json");
     const db = low(adapter);
 
     const channel_list = JSON.parse(
-        fs.readFileSync("./Private/channels.json", "utf8")
+        fs.readFileSync("./private/channels.json", "utf8")
     );
     // channel_list = channel_string.split('\n');
     console.log(channel_list);
@@ -546,10 +546,10 @@ const join_channel = async info_object => {
     if (joined_boolean) {
         return "I'm already in your channel.";
     } else {
-        // fs.appendFileSync('./Private/channels.txt', userstate.username + '\n');
+        // fs.appendFileSync('./private/channels.txt', userstate.username + '\n');
         channel_list.push(userstate.username);
         fs.writeFileSync(
-            "./Private/channels.json",
+            "./private/channels.json",
             JSON.stringify(channel_list)
         );
         if (!db.has(channel).value()) {
@@ -567,10 +567,10 @@ const leave_channel = async info_object => {
     let { channel, message, userstate, split_msg } = info_object;
     if (channel != "habbe2") return;
 
-    // const channel_string = fs.readFileSync('./Private/channels.txt', 'utf8').slice(0, -1);
+    // const channel_string = fs.readFileSync('./private/channels.txt', 'utf8').slice(0, -1);
     // channel_list = channel_string.split('\n');
     const channel_list = JSON.parse(
-        fs.readFileSync("./Private/channels.json", "utf8")
+        fs.readFileSync("./private/channels.json", "utf8")
     );
     console.log(channel_list);
     const channel_list_index = channel_list.indexOf(userstate.username);
@@ -579,9 +579,9 @@ const leave_channel = async info_object => {
         channel_list.splice(channel_list_index, 1);
         // channel_list.join('\n');
         console.log(channel_list);
-        // fs.writeFileSync("./Private/channels.txt", channel_list + "\n");
+        // fs.writeFileSync("./private/channels.txt", channel_list + "\n");
         fs.writeFileSync(
-            "./Private/channels.json",
+            "./private/channels.json",
             JSON.stringify(channel_list)
         );
         return "I have left your channel.";
@@ -596,7 +596,7 @@ const enable_component = async info_object => {
     let component = split_msg[1];
     if (component.indexOf("!") >= 0) component = component.replace("!", "");
     console.log("component: ", component);
-    const adapter = new FileSync("./Private/database.json");
+    const adapter = new FileSync("./private/database.json");
     const db = low(adapter);
 
     if (!db.get(channel + ".user-settings." + component).value()) {
@@ -613,7 +613,7 @@ const disable_component = async info_object => {
     if (component.indexOf("!") >= 0) component = component.replace("!", "");
     console.log("component: ", component);
 
-    const adapter = new FileSync("./Private/database.json");
+    const adapter = new FileSync("./private/database.json");
     const db = low(adapter);
 
     if (db.get(channel + ".user-settings." + component).value()) {
@@ -636,7 +636,7 @@ const slots = async info_object => {
     ];
     var rolls = [];
 
-    const adapter = new FileSync("./Private/database.json");
+    const adapter = new FileSync("./private/database.json");
     const db = low(adapter);
 
     if (db.get(channel + ".user-settings.slots").value() === false) {
