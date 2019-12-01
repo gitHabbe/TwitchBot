@@ -269,7 +269,7 @@ client.on("chat", (channel, userstate, message, self) => {
     }
     if (split_msg[0].startsWith("!")) {
         console.log("INSIDE");
-        const adapter = new FileSync("./Private/database.json");
+        const adapter = new FileSync("./private/database.json");
         const db = low(adapter);
         if (db.has("reserved-words").value()) {
             const reserved_bool =
