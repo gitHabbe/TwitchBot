@@ -228,8 +228,9 @@ const get_uptime = async info_object => {
 const get_title = async info_object => {
     let { channel, message } = info_object;
     const twitch_channel = await fetching.get_twitch_channel(channel);
-    console.log(twitch_channel.data.data[0].title);
-    return twitch_channel.data.data[0].title;
+    console.log("TCL: twitch_channel", twitch_channel);
+    // console.log(twitch_channel.data.data[0].title);
+    // return twitch_channel.data.data[0].title;
 };
 
 const set_highlight = async info_object => {
@@ -528,7 +529,7 @@ const get_timezone = async info_object => {
 };
 
 const join_channel = async info_object => {
-    let { channel, message, userstate, split_msg } = info_object;
+    let { channel, userstate } = info_object;
     if (channel != "habbe2") return;
 
     const adapter = new FileSync("./private/database.json");
@@ -566,7 +567,8 @@ const join_channel = async info_object => {
 const leave_channel = async info_object => {
     let { channel, message, userstate, split_msg } = info_object;
     if (channel != "habbe2") return;
-
+    console.log("test");
+    return;
     // const channel_string = fs.readFileSync('./private/channels.txt', 'utf8').slice(0, -1);
     // channel_list = channel_string.split('\n');
     const channel_list = JSON.parse(

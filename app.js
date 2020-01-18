@@ -13,12 +13,12 @@ client.on("connected", (address, port) => {
     console.log(`CONNECTED: ${address}:${port}`);
 });
 
-client.on("join", (channel, username, self) => {
-    console.log(username + " joined!");
-});
-client.on("part", (channel, username, self) => {
-    console.log(username + " left.");
-});
+// client.on("join", (channel, username, self) => {
+//     console.log(username + " joined!");
+// });
+// client.on("part", (channel, username, self) => {
+//     console.log(username + " left.");
+// });
 
 client.on("resub", (channel, username, months, message, userstate, methods) => {
     client.say(channel, "MY MAN! " + username.toUpperCase());

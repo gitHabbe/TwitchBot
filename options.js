@@ -1,3 +1,4 @@
+// Array of channels to join
 const channels = require("./private/channels.json");
 
 module.exports = {
