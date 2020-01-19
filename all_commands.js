@@ -18,7 +18,7 @@ const get_wr = async info_object => {
     info_object.fuse_hit = game_id_and_category.fuse_hit;
     info_object.game_id = game_id_and_category.game_id;
     info_object.category_id = game_id_and_category.category_id;
-    wr.fetch_wr(info_object);
+    return wr.fetch_wr(info_object);
 };
 
 const get_pb = async info_object => {
@@ -480,7 +480,6 @@ const join_channel = async info_object => {
     if (isJoined) {
         return "I'm already in your channel.";
     } else {
-        // fs.appendFileSync('./private/channels.txt', userstate.username + '\n');
         channel_list.push(userstate.username);
         fs.writeFileSync("./private/channels.json", JSON.stringify(channel_list));
         if (!db.has(channel).value()) {
