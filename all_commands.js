@@ -155,8 +155,8 @@ const check_cc = async info_object => {
     const userDB = db.get("users").find({ name: channel });
     const is_used = userDB
         .get("commands")
-        .value()
-        .find(cmd => cmd.name === split_msg[0]);
+        .find({ name: split_msg[1] })
+        .value();
     if (!is_used) return "Command not found.";
 
     return is_used.content;
@@ -164,25 +164,40 @@ const check_cc = async info_object => {
 
 const delete_cc = async info_object => {
     let { channel, message, userstate, split_msg } = info_object;
-    const permission = await get_permission(info_object);
+    const permission = await is_permissioned(info_object);
     if (!permission) return "Permission denied";
 
     const adapter = new FileSync("./private/database.json");
     const db = low(adapter);
+    const userDB = db.get("users").find({ name: channel });
 
-    if (
-        db
-            .get(channel + ".cc")
-            .find({ cmd_name: split_msg[1] })
-            .value()
-    ) {
-        db.get(channel + ".cc")
-            .remove({ cmd_name: split_msg[1] })
-            .write();
-        return `Command ${split_msg[1]} removed`;
-    } else {
-        return "Cannot find command";
-    }
+    const is_cmd = userDB
+        .get("commands")
+        .find({ name: split_msg[1] })
+        .value();
+
+    if (!is_cmd) return split_msg[1] + " is not a command.";
+
+    userDB
+        .get("commands")
+        .remove({ name: split_msg[1] })
+        .write();
+
+    return split_msg[1] + " deleted.";
+
+    // if (
+    //     db
+    //         .get(channel + ".cc")
+    //         .find({ cmd_name: split_msg[1] })
+    //         .value()
+    // ) {
+    //     db.get(channel + ".cc")
+    //         .remove({ cmd_name: split_msg[1] })
+    //         .write();
+    //     return `Command ${split_msg[1]} removed`;
+    // } else {
+    //     return "Cannot find command";
+    // }
 };
 
 const get_uptime = async info_object => {
@@ -199,14 +214,14 @@ const get_uptime = async info_object => {
 const get_title = async info_object => {
     let { channel, message } = info_object;
     const twitch_channel = await fetching.get_twitch_channel(channel);
-    console.log("TCL: twitch_channel", twitch_channel);
-    // console.log(twitch_channel.data.data[0].title);
-    // return twitch_channel.data.data[0].title;
+    if (twitch_channel.data.data.length === 0) return channel + " is not online.";
+
+    return twitch_channel.data.data[0].title;
 };
 
 const set_highlight = async info_object => {
     let { channel, message, userstate, split_msg } = info_object;
-    const permission = await get_permission(info_object);
+    const permission = await is_permissioned(info_object);
     if (!permission) return "Permission denied";
 
     const adapter = new FileSync("./private/database.json");
