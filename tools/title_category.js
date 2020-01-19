@@ -9,48 +9,46 @@ const get_game_id = async info_object => {
     const msg_game = split_msg.length > 1 && split_msg[1];
     const adapter = new FileSync("./private/database.json");
     const db = low(adapter);
+    const gameDB = db.get("games");
     if (msg_game) {
-        if (!db.has(msg_game + ".id").value()) {
-            console.log("Game not found in DB, fetching game...");
+        const is_gameDB = gameDB.find({ abbrev: msg_game }).value();
+        if (!is_gameDB) {
             return fetching.get_speedrungame_by_abbreviation(msg_game).then(res => {
-                db.set(msg_game + ".id", res.data.data[0].id).write();
-                console.log("res.data.data[0].id: ", res.data.data[0].id);
-                return {
-                    game_id: res.data.data[0].id,
-                    abbrev: res.data.data[0].abbreviation
+                const game_obj = {
+                    id: res.data.data[0].id,
+                    abbrev: res.data.data[0].abbreviation,
+                    categories: [],
+                    added_by: userstate.username,
+                    date: new Date()
                 };
+                db.get("games")
+                    .push(game_obj)
+                    .write();
+                return game_obj;
             });
-        } else {
-            console.log("Game found in DB: ", msg_game);
-            return {
-                game_id: db.get(msg_game + ".id").value(),
-                abbrev: msg_game
-            };
         }
+        return {
+            id: gameDB.id,
+            abbrev: gameDB.abbrev
+        };
     } else {
-        console.log("No game specified, fetching twitch game...");
         const twitch_channel = await fetching.get_twitch_channel(channel);
         const twitch_game = await fetching.get_twitch_game(twitch_channel.data.data[0].game_id);
         const speedrun_game = await fetching.get_speedrungame_by_name(twitch_game.data.data[0].name);
-        if (!db.has(speedrun_game.data.data[0].abbreviation)) {
-            console.log("Game not found in DB, adding...");
-            db.set(speedrun_game.data.data[0].abbreviation + ".id", speedrun_game.data.data[0].id).write();
-            return {
-                game_id: speedrun_game.data.data[0].id,
-                abbrev: speedrun_game.data.data[0].abbreviation
-            };
-        } else {
-            console.log(
-                "Game found in DB: ",
-                speedrun_game.data.data[0].abbreviation,
-                " ",
-                speedrun_game.data.data[0].id
-            );
-            return {
-                game_id: speedrun_game.data.data[0].id,
-                abbrev: speedrun_game.data.data[0].abbreviation
-            };
+        const is_gameDB = gameDB.find({ id: speedrun_game.data.data[0].id }).value();
+        const game_obj = {
+            id: speedrun_game.data.data[0].id,
+            abbrev: speedrun_game.data.data[0].abbreviation,
+            categories: [],
+            added_by: userstate.username,
+            date: new Date()
+        };
+        if (!is_gameDB) {
+            db.get("games")
+                .push(game_obj)
+                .write();
         }
+        return game_obj;
     }
 };
 
