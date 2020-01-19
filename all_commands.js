@@ -113,6 +113,15 @@ const new_cc = async info_object => {
     if (!permission) return "Permission denied";
     if (!split_msg[1]) return "No command-name specified.";
     if (!split_msg[2]) return "No command-content specified.";
+
+    const adapterw = new FileSync("./reserved-words.json");
+    const dbw = low(adapterw);
+    const is_reserved = dbw
+        .get("words")
+        .value()
+        .find(word => word === split_msg[0]);
+    if (is_reserved) return split_msg[0] + " is a reserved command.";
+
     const content = split_msg.slice(2).join(" ");
 
     const adapter = new FileSync("./private/database.json");
