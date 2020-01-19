@@ -7,21 +7,19 @@ const util = require("./util.js");
 const get_game_id = async info_object => {
     let { channel, userstate, message, split_msg } = info_object;
     const msg_game = split_msg.length > 1 && split_msg[1];
-    const adapter = new FileSync("./private/game_id_list.json");
+    const adapter = new FileSync("./private/database.json");
     const db = low(adapter);
     if (msg_game) {
         if (!db.has(msg_game + ".id").value()) {
             console.log("Game not found in DB, fetching game...");
-            return fetching
-                .get_speedrungame_by_abbreviation(msg_game)
-                .then(res => {
-                    db.set(msg_game + ".id", res.data.data[0].id).write();
-                    console.log("res.data.data[0].id: ", res.data.data[0].id);
-                    return {
-                        game_id: res.data.data[0].id,
-                        abbrev: res.data.data[0].abbreviation
-                    };
-                });
+            return fetching.get_speedrungame_by_abbreviation(msg_game).then(res => {
+                db.set(msg_game + ".id", res.data.data[0].id).write();
+                console.log("res.data.data[0].id: ", res.data.data[0].id);
+                return {
+                    game_id: res.data.data[0].id,
+                    abbrev: res.data.data[0].abbreviation
+                };
+            });
         } else {
             console.log("Game found in DB: ", msg_game);
             return {
@@ -32,18 +30,11 @@ const get_game_id = async info_object => {
     } else {
         console.log("No game specified, fetching twitch game...");
         const twitch_channel = await fetching.get_twitch_channel(channel);
-        const twitch_game = await fetching.get_twitch_game(
-            twitch_channel.data.data[0].game_id
-        );
-        const speedrun_game = await fetching.get_speedrungame_by_name(
-            twitch_game.data.data[0].name
-        );
+        const twitch_game = await fetching.get_twitch_game(twitch_channel.data.data[0].game_id);
+        const speedrun_game = await fetching.get_speedrungame_by_name(twitch_game.data.data[0].name);
         if (!db.has(speedrun_game.data.data[0].abbreviation)) {
             console.log("Game not found in DB, adding...");
-            db.set(
-                speedrun_game.data.data[0].abbreviation + ".id",
-                speedrun_game.data.data[0].id
-            ).write();
+            db.set(speedrun_game.data.data[0].abbreviation + ".id", speedrun_game.data.data[0].id).write();
             return {
                 game_id: speedrun_game.data.data[0].id,
                 abbrev: speedrun_game.data.data[0].abbreviation
@@ -72,8 +63,7 @@ const get_category = async info_object => {
 
     const adapter = new FileSync("./private/game_id_list.json");
     const db = low(adapter);
-    if (!db.has(abbrev + ".categories").value())
-        db.set(abbrev + ".categories", []).write();
+    if (!db.has(abbrev + ".categories").value()) db.set(abbrev + ".categories", []).write();
 
     const db_category_list = db.get(abbrev + ".categories").value();
     let category_list = [];
@@ -85,23 +75,15 @@ const get_category = async info_object => {
     } else {
         console.log("No category list found, fettching by id: ", game_id);
         const speedrun_game = await fetching.get_speedrungame_by_id(game_id);
-        const category_uri = util.get_game_link(
-            speedrun_game.data.data,
-            "categories"
-        );
-        const category_list_fetch = await fetching.fetch_speedrun_uri(
-            category_uri
-        );
+        const category_uri = util.get_game_link(speedrun_game.data.data, "categories");
+        const category_list_fetch = await fetching.fetch_speedrun_uri(category_uri);
         category_list_fetch.data.data.forEach(category_obj => {
             if (
-                category_obj.links.findIndex(
-                    link => link.rel === "leaderboard"
-                ) != -1 &&
+                category_obj.links.findIndex(link => link.rel === "leaderboard") != -1 &&
                 db
                     .get(abbrev + ".categories")
                     .value()
-                    .findIndex(category => category.id === category_obj.id) ===
-                    -1
+                    .findIndex(category => category.id === category_obj.id) === -1
             ) {
                 db.get(abbrev + ".categories")
                     .push({
@@ -125,10 +107,7 @@ const get_category = async info_object => {
     } else {
         console.log("No category specified, fetching title...");
         const twitch_channel = await fetching.get_twitch_channel(channel);
-        fuse_hit = fuse.get_fuse_result(
-            category_list,
-            twitch_channel.data.data[0].title
-        );
+        fuse_hit = fuse.get_fuse_result(category_list, twitch_channel.data.data[0].title);
     }
     console.log("category_list: ", category_list);
     console.log("fuse_hit: ", fuse_hit);

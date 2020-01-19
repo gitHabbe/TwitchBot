@@ -219,7 +219,7 @@ const set_highlight = async info_object => {
         .get("highlights");
     const is_taken = userDB.find({ hl_name: message.slice(4) }).value();
     if (is_taken) return "Highlight-name already exists.";
-    channel = "lezonta";
+    // channel = "lezonta";
     const twitch_channel = await fetching.get_twitch_channel(channel);
     const user_video_list = await fetching.get_twitch_videos(twitch_channel.data.data[0].user_id);
     const highlight_id = user_video_list.data.data[0].id;
@@ -277,7 +277,7 @@ const get_target_highlight = async info_object => {
 };
 
 const delete_highlight = async info_object => {
-    let { channel, message, userstate } = info_object;
+    let { channel, message } = info_object;
     const permission = await is_permissioned(info_object);
     if (!permission) return "Permission denied";
 
@@ -548,17 +548,17 @@ const disable_component = async info_object => {
 };
 
 const slots = async info_object => {
-    let { channel, message, userstate, split_msg } = info_object;
+    let { userstate } = info_object;
 
     var emotes = ["Kappa", "Jebaited", "MingLee", "DansGame", "PogChamp", "Kreygasm"];
     var rolls = [];
 
-    const adapter = new FileSync("./private/database.json");
-    const db = low(adapter);
+    // const adapter = new FileSync("./private/database.json");
+    // const db = low(adapter);
 
-    if (db.get(channel + ".user-settings.slots").value() === false) {
-        return "Slots not enabled in this channel.";
-    }
+    // if (db.get(channel + ".user-settings.slots").value() === false) {
+    //     return "Slots not enabled in this channel.";
+    // }
 
     for (var i = 0; i < 3; i++) {
         var randomNr = Math.floor(Math.random() * emotes.length);
