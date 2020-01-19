@@ -14,10 +14,10 @@ const pb = require("./tools/fetch_pb.js");
 const get_wr = async info_object => {
     let { channel, userstate, message, split_msg } = info_object;
     // info_object.channel = 'Wilko'
-    const game_id_and_category = await tg.set_game_and_category(info_object);
-    info_object.fuse_hit = game_id_and_category.fuse_hit;
-    info_object.game_id = game_id_and_category.game_id;
-    info_object.category_id = game_id_and_category.category_id;
+    const { game_id, category_id, category } = await tg.set_game_and_category(info_object);
+    info_object.game_id = game_id;
+    info_object.category_id = category_id;
+    info_object.category = category;
     return wr.fetch_wr(info_object);
 };
 
@@ -26,10 +26,8 @@ const get_pb = async info_object => {
     console.log(info_object.split_msg);
     // info_object.channel = 'Fuzzyness'
     if (split_msg.length === 1) {
-        console.log("IF");
         info_object.runner = channel;
     } else {
-        console.log("ELSE");
         info_object.channel = info_object.split_msg[1];
         info_object.split_msg.splice(1, 1);
         console.log(info_object.split_msg);

@@ -12,6 +12,7 @@ const get_game_id = async info_object => {
     const gameDB = db.get("games");
     if (msg_game) {
         const is_gameDB = gameDB.find({ abbrev: msg_game }).value();
+        // console.log("LOG: is_gameDB", is_gameDB);
         if (!is_gameDB) {
             return fetching.get_speedrungame_by_abbreviation(msg_game).then(res => {
                 const game_obj = {
@@ -28,8 +29,8 @@ const get_game_id = async info_object => {
             });
         }
         return {
-            id: gameDB.id,
-            abbrev: gameDB.abbrev
+            id: is_gameDB.id,
+            abbrev: is_gameDB.abbrev
         };
     } else {
         const twitch_channel = await fetching.get_twitch_channel(channel);
@@ -53,67 +54,47 @@ const get_game_id = async info_object => {
 };
 
 const get_category = async info_object => {
-    let { channel, userstate, message, split_msg } = info_object;
-    const { game_id, abbrev } = await get_game_id(info_object);
-    console.log("game_id: ", game_id);
+    let { channel, split_msg } = info_object;
+    const { id, abbrev } = await get_game_id(info_object);
+    // console.log("LOG: abbrev", abbrev);
     let msg_category = split_msg.length > 2 && split_msg.slice(2);
-    console.log("msg_category: ", msg_category);
 
-    const adapter = new FileSync("./private/game_id_list.json");
+    const adapter = new FileSync("./private/database.json");
     const db = low(adapter);
-    if (!db.has(abbrev + ".categories").value()) db.set(abbrev + ".categories", []).write();
-
-    const db_category_list = db.get(abbrev + ".categories").value();
-    let category_list = [];
-    if (db_category_list.length >= 1) {
-        console.log("A category list was found in DB");
-        category_list = db_category_list.map(category => {
-            return { category: category.name, category_id: category.id };
-        });
-    } else {
-        console.log("No category list found, fettching by id: ", game_id);
-        const speedrun_game = await fetching.get_speedrungame_by_id(game_id);
+    const gameDB = db.get("games").find({ abbrev });
+    const categoriesDB = gameDB.get("categories").value();
+    if (categoriesDB.length === 0) {
+        // console.log("No category list found, fettching by id: ", id);
+        const speedrun_game = await fetching.get_speedrungame_by_id(id);
         const category_uri = util.get_game_link(speedrun_game.data.data, "categories");
         const category_list_fetch = await fetching.fetch_speedrun_uri(category_uri);
         category_list_fetch.data.data.forEach(category_obj => {
-            if (
-                category_obj.links.findIndex(link => link.rel === "leaderboard") != -1 &&
-                db
-                    .get(abbrev + ".categories")
-                    .value()
-                    .findIndex(category => category.id === category_obj.id) === -1
-            ) {
-                db.get(abbrev + ".categories")
-                    .push({
-                        id: category_obj.id,
-                        name: category_obj.name
-                    })
-                    .write();
-                category_list.push({
-                    category: category_obj.name,
-                    category_id: category_obj.id
-                });
-                console.log("Wrote new category to game");
-            }
+            let { id, name, links } = category_obj;
+            const hasLeaderboard = links.find(link => link.rel === "leaderboard") != -1;
+            // const hasCategory = categoriesDB.findIndex(category => category.id === category_obj.id) === -1;
+            if (!hasLeaderboard) return;
+            gameDB
+                .get("categories")
+                .push({ id, name })
+                .write();
         });
     }
-    let fuse_shit;
+    let fuse_hit, category_list;
     if (msg_category) {
+        category_list = categoriesDB;
         msg_category = split_msg.slice(2).join(" ");
-        console.log("Category specified by user: ", msg_category);
         fuse_hit = fuse.get_fuse_result(category_list, msg_category);
     } else {
-        console.log("No category specified, fetching title...");
         const twitch_channel = await fetching.get_twitch_channel(channel);
         fuse_hit = fuse.get_fuse_result(category_list, twitch_channel.data.data[0].title);
     }
-    console.log("category_list: ", category_list);
-    console.log("fuse_hit: ", fuse_hit);
+    // console.log("fuse_hit: ", fuse_hit);
 
     return {
-        fuse_hit: fuse_hit,
-        game_id: game_id,
-        category_id: fuse_hit.category_id
+        category_id: fuse_hit.id,
+        game_id: id,
+        category: fuse_hit.name
+        // category_id: fuse_hit.category_id
         // speedrun_game: speedrun_game
     };
 };
