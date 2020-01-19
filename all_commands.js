@@ -109,45 +109,32 @@ const get_il_pb = async info_object => {
 
 const new_cc = async info_object => {
     let { channel, message, userstate, split_msg } = info_object;
-    const permission = await get_permission(info_object);
+    const permission = await is_permissioned(info_object);
     if (!permission) return "Permission denied";
+    if (!split_msg[1]) return "No command-name specified.";
+    if (!split_msg[2]) return "No command-content specified.";
+    const content = split_msg.slice(2).join(" ");
 
     const adapter = new FileSync("./private/database.json");
     const db = low(adapter);
 
-    const cmd_text = split_msg.slice(2).join(" ");
+    const userDB = db.get("users").find({ name: channel });
+    const is_taken = userDB
+        .get("commands")
+        .value()
+        .find(cmd => cmd.name === split_msg[1]);
+    if (is_taken) return "Command already exists.";
+    userDB
+        .get("commands")
+        .push({
+            name: split_msg[1],
+            content: content,
+            made_by: userstate.username,
+            date: new Date()
+        })
+        .write();
 
-    if (
-        db
-            .get("reserved-words")
-            .value()
-            .find(reserved_cmd => reserved_cmd === split_msg[1])
-    )
-        return "Command-name reserved";
-    if (!split_msg[1]) return "No command-name specified";
-    else if (cmd_text === "") return "No text to command specified";
-
-    if (!db.has(channel).value()) db.set(channel, {}).write();
-    if (!db.has(channel + ".cc").value()) db.set(channel + ".cc", []).write();
-
-    if (
-        !db
-            .get(channel + ".cc")
-            .find({ cmd_name: split_msg[1] })
-            .value()
-    ) {
-        db.get(channel + ".cc")
-            .push({
-                cmd_name: split_msg[1],
-                cmd_text: cmd_text,
-                made_by: userstate.username,
-                date: new Date()
-            })
-            .write();
-        return "Command created: " + split_msg[1];
-    } else {
-        return "Command already exists";
-    }
+    return "Command created: " + split_msg[1];
 };
 
 const check_cc = async info_object => {
@@ -484,16 +471,15 @@ const join_channel = async info_object => {
     const channel_list = JSON.parse(fs.readFileSync("./private/channels.json", "utf8"));
     const isJoined = channel_list.find(name => name === userstate.username);
 
-    if (isJoined) {
-        return "I'm already in your channel.";
-    } else {
-        channel_list.push(userstate.username);
-        fs.writeFileSync("./private/channels.json", JSON.stringify(channel_list));
-        db.get("users")
-            .push({ name: userstate.username, settings: {}, commands: [], components: [], permission: [] })
-            .write();
-        return "I have joined your channel, use !help to learn my commands.";
-    }
+    if (isJoined) return "I'm already in your channel.";
+
+    channel_list.push(userstate.username);
+    fs.writeFileSync("./private/channels.json", JSON.stringify(channel_list));
+    db.get("users")
+        .push({ name: userstate.username, settings: {}, commands: [], components: [], permission: [] })
+        .write();
+
+    return "I have joined your channel, use !help to learn my commands.";
 };
 
 const leave_channel = async info_object => {
