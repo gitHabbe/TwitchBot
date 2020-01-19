@@ -18,9 +18,7 @@ const get_wr = async info_object => {
     info_object.fuse_hit = game_id_and_category.fuse_hit;
     info_object.game_id = game_id_and_category.game_id;
     info_object.category_id = game_id_and_category.category_id;
-    const res = wr.fetch_wr(info_object);
-
-    return res;
+    wr.fetch_wr(info_object);
 };
 
 const get_pb = async info_object => {
@@ -41,11 +39,7 @@ const get_pb = async info_object => {
     info_object.game_id = game_id_and_category.game_id;
     info_object.category_id = game_id_and_category.category_id;
     info_object.fuse_hit = game_id_and_category.fuse_hit;
-    console.log(
-        info_object.game_id,
-        info_object.category_id,
-        info_object.fuse_hit
-    );
+    console.log(info_object.game_id, info_object.category_id, info_object.fuse_hit);
 
     return pb.fetch_pb(info_object);
 };
@@ -65,22 +59,11 @@ const get_il_wr = async info_object => {
         return { category: level_name, lb_uri: lb_uri.uri, index: index };
     });
     // console.log('level_list_names: ', level_list_names);
-    const fuse_hit = fuse.get_fuse_result(
-        level_list_names,
-        split_msg.slice(2).join(" ")
-    );
-    const level_lb = await fetching.fetch_speedrun_uri(
-        fuse_hit.lb_uri + "?top=1"
-    );
-    const wr_time = util.millisecondsToString(
-        level_lb.data.data.runs[0].run.times.primary_t
-    );
-    const speedrunner = await fetching.fetch_speedrun_uri(
-        level_lb.data.data.runs[0].run.players[0].uri
-    );
-    const days_ago = Math.floor(
-        (new Date() - new Date(level_lb.data.data.runs[0].run.date)) / 86400000
-    );
+    const fuse_hit = fuse.get_fuse_result(level_list_names, split_msg.slice(2).join(" "));
+    const level_lb = await fetching.fetch_speedrun_uri(fuse_hit.lb_uri + "?top=1");
+    const wr_time = util.millisecondsToString(level_lb.data.data.runs[0].run.times.primary_t);
+    const speedrunner = await fetching.fetch_speedrun_uri(level_lb.data.data.runs[0].run.players[0].uri);
+    const days_ago = Math.floor((new Date() - new Date(level_lb.data.data.runs[0].run.date)) / 86400000);
 
     return `${level_list.data.data[fuse_hit.index].name} WR: ${wr_time} \
 by ${speedrunner.data.data.names.international} \
@@ -95,9 +78,7 @@ const get_il_pb = async info_object => {
     let speedrunner_list = await fetching.get_speedrunner(runner_msg);
     // console.log('speedrunner_list.data: ', speedrunner_list.data);
     speedrunner = speedrunner_list.data.data.find(
-        runner =>
-            runner.names.international.toLowerCase() ===
-            runner_msg.toLowerCase()
+        runner => runner.names.international.toLowerCase() === runner_msg.toLowerCase()
     );
     // console.log('speedrunner ', speedrunner);
 
@@ -114,10 +95,7 @@ const get_il_pb = async info_object => {
         const lb_uri = level.links.find(link => link.rel === "leaderboard");
         return { category: level_name, lb_uri: lb_uri.uri, index: index };
     });
-    const fuse_hit = fuse.get_fuse_result(
-        level_list_names,
-        split_msg.slice(2).join(" ")
-    );
+    const fuse_hit = fuse.get_fuse_result(level_list_names, split_msg.slice(2).join(" "));
     console.log("fuse_hit: ", fuse_hit);
     const level_lb = await fetching.fetch_speedrun_uri(fuse_hit.lb_uri);
     const run = level_lb.data.data.runs.find(run => {
@@ -239,17 +217,14 @@ const set_highlight = async info_object => {
     const db = low(adapter);
     // channel = 'Wilko'
     const twitch_channel = await fetching.get_twitch_channel(channel);
-    const user_video_list = await fetching.get_twitch_videos(
-        twitch_channel.data.data[0].user_id
-    );
+    const user_video_list = await fetching.get_twitch_videos(twitch_channel.data.data[0].user_id);
     const highlight_id = user_video_list.data.data[0].id;
     const highlight_url = user_video_list.data.data[0].url;
     const uptime_date = new Date(twitch_channel.data.data[0].started_at);
     const seconds_ago = Math.floor((new Date() - uptime_date) / 1000);
 
     if (!db.has(channel).value()) db.set(channel, []).write();
-    if (!db.has(channel + ".highlights").value())
-        db.set(channel + ".highlights", []).write();
+    if (!db.has(channel + ".highlights").value()) db.set(channel + ".highlights", []).write();
 
     if (
         !db
@@ -280,14 +255,8 @@ const get_highlights = async info_object => {
     const all_states = db.getState();
     // console.log(all_states[channel])
     // console.log(all_states[channel].highlights)
-    if (
-        all_states[channel].highlights &&
-        all_states[channel].highlights.length != 0
-    ) {
-        return (
-            "Highlights: " +
-            all_states[channel].highlights.map(hl => hl.hl_name).join(", ")
-        );
+    if (all_states[channel].highlights && all_states[channel].highlights.length != 0) {
+        return "Highlights: " + all_states[channel].highlights.map(hl => hl.hl_name).join(", ");
     }
     return "Streamer has no highlights";
 };
@@ -298,18 +267,12 @@ const get_target_highlight = async info_object => {
     const db = low(adapter);
     const target_highlight = message.slice(7);
     const all_states = db.getState();
-    const highlight_hit = all_states[channel].highlights.find(
-        hl => hl.hl_name === target_highlight
-    );
+    const highlight_hit = all_states[channel].highlights.find(hl => hl.hl_name === target_highlight);
 
-    const timestamp = util
-        .secondsToString(highlight_hit.timestamp - 100)
-        .replace(/\s/g, "");
+    const timestamp = util.secondsToString(highlight_hit.timestamp - 100).replace(/\s/g, "");
     console.log(timestamp);
     // highlight_hit.hl_name + ', ' + res.hl_url + '?t=' + (res.timestamp - 150) + 's')
-    return (
-        highlight_hit.hl_name + ", " + highlight_hit.hl_url + "?t=" + timestamp
-    );
+    return highlight_hit.hl_name + ", " + highlight_hit.hl_url + "?t=" + timestamp;
 };
 
 const delete_highlight = async info_object => {
@@ -346,10 +309,7 @@ const get_followage = async info_object => {
 
     const streamer = await fetching.get_twitch_channel(channel);
     const streamer_id = streamer.data.data[0].user_id;
-    const followage_info = await fetching.get_twitch_followage(
-        streamer_id,
-        userstate["user-id"]
-    );
+    const followage_info = await fetching.get_twitch_followage(streamer_id, userstate["user-id"]);
     console.log(followage_info.data);
     if (followage_info.data.data.length >= 1) {
         const follow_date = new Date(followage_info.data.data[0].followed_at);
@@ -365,28 +325,17 @@ const get_youtube_info = async (info_object, short = false) => {
     let re = /http(?:s?):\/\/(?:www\.)?youtu(?:be\.com\/watch\?v=|\.be\/)([\w\-\_]*)(&(amp;)[\w\=]*)?/;
     let yt_link;
     if (short) {
-        yt_link = split_msg.find(
-            word => word.indexOf("https://youtu.be") !== -1
-        );
+        yt_link = split_msg.find(word => word.indexOf("https://youtu.be") !== -1);
     } else {
-        yt_link = split_msg.find(
-            word => word.indexOf("https://www.youtube.com") !== -1
-        );
+        yt_link = split_msg.find(word => word.indexOf("https://www.youtube.com") !== -1);
     }
     const yt_id = re.exec(yt_link)[1];
     console.log(yt_id);
     const yt_video = await axios.get(
         `https://www.googleapis.com/youtube/v3/videos?id=${yt_id}&key=${process.env.YT_API_KEY}&part=snippet,contentDetails,statistics,status`
     );
-    const {
-        viewCount,
-        likeCount,
-        dislikeCount
-    } = yt_video.data.items[0].statistics;
-    const likePercent = Math.round(
-        (parseInt(likeCount) / (parseInt(likeCount) + parseInt(dislikeCount))) *
-            100
-    );
+    const { viewCount, likeCount, dislikeCount } = yt_video.data.items[0].statistics;
+    const likePercent = Math.round((parseInt(likeCount) / (parseInt(likeCount) + parseInt(dislikeCount))) * 100);
     const title = yt_video.data.items[0].snippet.title;
     re = /[A-Z][A-Z](\d*H+)*(\d*M+)*(\d*S)/;
     const duration = yt_video.data.items[0].contentDetails.duration;
@@ -436,8 +385,7 @@ const add_permission = async info_object => {
     const db = low(adapter);
 
     if (!db.has(channel).value()) db.set(channel, {}).write();
-    if (!db.has(channel + ".perm").value())
-        db.set(channel + ".perm", []).write();
+    if (!db.has(channel + ".perm").value()) db.set(channel + ".perm", []).write();
 
     if (
         !db
@@ -463,8 +411,7 @@ const list_permission = async info_object => {
     const db = low(adapter);
 
     if (!db.has(channel).value()) db.set(channel, {}).write();
-    if (!db.has(channel + ".perm").value())
-        db.set(channel + ".perm", []).write();
+    if (!db.has(channel + ".perm").value()) db.set(channel + ".perm", []).write();
 
     const perm_list = db
         .get(channel + ".perm")
@@ -508,15 +455,11 @@ const get_timezone = async info_object => {
             process.env.TMZDB_API_KEY +
             "&to=America/New_York&from=Europe/Stockholm&format=json"
     );
-    console.log(
-        parseInt(res.data.fromTimestamp) - parseInt(res.data.toTimestamp)
-    );
+    console.log(parseInt(res.data.fromTimestamp) - parseInt(res.data.toTimestamp));
     const [msg_hour, msg_minute] = split_msg[1].split(":");
     console.log(msg_hour, msg_minute);
     console.log(res.data);
-    const new_hour =
-        (parseInt(res.data.fromTimestamp) - parseInt(res.data.toTimestamp)) /
-        3600;
+    const new_hour = (parseInt(res.data.fromTimestamp) - parseInt(res.data.toTimestamp)) / 3600;
     // const new_time = parseInt(split_msg[1]) - parseInt(hour_difference)
     // console.log(new_time)
     // return new_time + ' ' + res.data.toAbbreviation;
@@ -532,24 +475,17 @@ const join_channel = async info_object => {
     const adapter = new FileSync("./private/database.json");
     const db = low(adapter);
 
-    const channel_list = JSON.parse(
-        fs.readFileSync("./private/channels.json", "utf8")
-    );
+    const channel_list = JSON.parse(fs.readFileSync("./private/channels.json", "utf8"));
 
     console.log(channel_list);
-    const joined_boolean = channel_list.find(
-        name => name === userstate.username
-    );
+    const joined_boolean = channel_list.find(name => name === userstate.username);
 
     if (joined_boolean) {
         return "I'm already in your channel.";
     } else {
         // fs.appendFileSync('./private/channels.txt', userstate.username + '\n');
         channel_list.push(userstate.username);
-        fs.writeFileSync(
-            "./private/channels.json",
-            JSON.stringify(channel_list)
-        );
+        fs.writeFileSync("./private/channels.json", JSON.stringify(channel_list));
         if (!db.has(channel).value()) {
             db.set(channel, {
                 "user-settings": {
@@ -568,9 +504,7 @@ const leave_channel = async info_object => {
     return;
     // const channel_string = fs.readFileSync('./private/channels.txt', 'utf8').slice(0, -1);
     // channel_list = channel_string.split('\n');
-    const channel_list = JSON.parse(
-        fs.readFileSync("./private/channels.json", "utf8")
-    );
+    const channel_list = JSON.parse(fs.readFileSync("./private/channels.json", "utf8"));
     console.log(channel_list);
     const channel_list_index = channel_list.indexOf(userstate.username);
     console.log("channel_list_index: ", channel_list_index);
@@ -579,10 +513,7 @@ const leave_channel = async info_object => {
         // channel_list.join('\n');
         console.log(channel_list);
         // fs.writeFileSync("./private/channels.txt", channel_list + "\n");
-        fs.writeFileSync(
-            "./private/channels.json",
-            JSON.stringify(channel_list)
-        );
+        fs.writeFileSync("./private/channels.json", JSON.stringify(channel_list));
         return "I have left your channel.";
     } else {
         return "I'm not in your channel.";
@@ -625,14 +556,7 @@ const disable_component = async info_object => {
 const slots = async info_object => {
     let { channel, message, userstate, split_msg } = info_object;
 
-    var emotes = [
-        "Kappa",
-        "Jebaited",
-        "MingLee",
-        "DansGame",
-        "PogChamp",
-        "Kreygasm"
-    ];
+    var emotes = ["Kappa", "Jebaited", "MingLee", "DansGame", "PogChamp", "Kreygasm"];
     var rolls = [];
 
     const adapter = new FileSync("./private/database.json");
@@ -653,8 +577,7 @@ const slots = async info_object => {
 
     sentence = sentence.slice(0, -2);
 
-    if (rolls[0] === rolls[1] && rolls[1] === rolls[2])
-        sentence += " ---> " + userstate["display-name"] + " Legend!";
+    if (rolls[0] === rolls[1] && rolls[1] === rolls[2]) sentence += " ---> " + userstate["display-name"] + " Legend!";
 
     return sentence;
 };
