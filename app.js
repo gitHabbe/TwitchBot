@@ -162,14 +162,8 @@ client.on("chat", async (channel, userstate, message, self) => {
                 });
             break;
         case "!followage":
-            commands
-                .get_followage(info_object)
-                .then(res => {
-                    client.say(channel, userstate["display-name"] + " followage: " + res + " days");
-                })
-                .catch(err => {
-                    client.say(channel, "Cannot find followage");
-                });
+            res = await commands.get_followage(info_object);
+            client.say(channel, res);
             break;
         case "!slots":
             commands

@@ -184,20 +184,6 @@ const delete_cc = async info_object => {
         .write();
 
     return split_msg[1] + " deleted.";
-
-    // if (
-    //     db
-    //         .get(channel + ".cc")
-    //         .find({ cmd_name: split_msg[1] })
-    //         .value()
-    // ) {
-    //     db.get(channel + ".cc")
-    //         .remove({ cmd_name: split_msg[1] })
-    //         .write();
-    //     return `Command ${split_msg[1]} removed`;
-    // } else {
-    //     return "Cannot find command";
-    // }
 };
 
 const get_uptime = async info_object => {
@@ -316,19 +302,18 @@ const delete_highlight = async info_object => {
 };
 
 const get_followage = async info_object => {
-    let { channel, message, userstate } = info_object;
-
+    let { channel, userstate } = info_object;
     const streamer = await fetching.get_twitch_channel(channel);
+    if (streamer.data.data.length === 0) return "Channel offline.";
     const streamer_id = streamer.data.data[0].user_id;
-    const followage_info = await fetching.get_twitch_followage(streamer_id, userstate["user-id"]);
-    console.log(followage_info.data);
-    if (followage_info.data.data.length >= 1) {
-        const follow_date = new Date(followage_info.data.data[0].followed_at);
-        const days_ago = Math.floor((new Date() - follow_date) / 86400000);
 
-        return days_ago;
-    }
-    return -1;
+    let followage_info = await fetching.get_twitch_followage(streamer_id, userstate["user-id"]);
+    followage_info = followage_info.data.data;
+    if (followage_info.length === 0) return userstate.username + " is not following " + channel;
+    const follow_date = new Date(followage_info.followed_at);
+    const days_ago = Math.floor((new Date() - follow_date) / 86400000);
+
+    return userstate.username + " followage: " + days_ago + " days";
 };
 
 const get_youtube_info = async (info_object, short = false) => {
