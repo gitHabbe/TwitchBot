@@ -375,77 +375,86 @@ const get_tweet_info = async info_object => {
 };
 
 const add_permission = async info_object => {
-    let { channel, message, userstate, split_msg } = info_object;
-    const permission = await get_permission(info_object);
+    let { channel, userstate, split_msg } = info_object;
+    const permission = await is_permissioned(info_object);
     if (!permission) return "Permission denied";
-    console.log("PERMISSION GRANTED!");
     if (!split_msg[1]) return "No user specified";
 
     const adapter = new FileSync("./private/database.json");
     const db = low(adapter);
+    const userDB = db.get("users").find({ name: channel });
+    const is_listed = userDB.value().permission.find(user => user.name === split_msg[1]);
 
-    if (!db.has(channel).value()) db.set(channel, {}).write();
-    if (!db.has(channel + ".perm").value()) db.set(channel + ".perm", []).write();
+    console.log("TCL: is_listed", is_listed);
+    if (is_listed) return `${split_msg[1]} is already on the list`;
 
-    if (
-        !db
-            .get(channel + ".perm")
-            .find({ name: split_msg[1] })
-            .value()
-    ) {
-        db.get(channel + ".perm")
-            .push({
-                name: split_msg[1],
-                date: new Date(),
-                made_by: userstate.username
-            })
-            .write();
-        return `${split_msg[1]} added to permission list`;
-    }
-    return `${split_msg[1]} is already on the list`;
+    userDB
+        .get("permission")
+        .push({
+            name: split_msg[1],
+            date: new Date(),
+            made_by: userstate.username
+        })
+        .write();
+
+    return `${split_msg[1]} added to permission list`;
 };
 
 const list_permission = async info_object => {
-    let { channel, message, userstate, split_msg } = info_object;
+    let { channel } = info_object;
     const adapter = new FileSync("./private/database.json");
     const db = low(adapter);
+    let dbUser = db
+        .get("users")
+        .find({ name: channel })
+        .value();
 
-    if (!db.has(channel).value()) db.set(channel, {}).write();
-    if (!db.has(channel + ".perm").value()) db.set(channel + ".perm", []).write();
+    return dbUser.permission;
+    // if (!db.has(channel).value()) db.set(channel, {}).write();
+    // if (!db.has(channel + ".perm").value()) db.set(channel + ".perm", []).write();
 
-    const perm_list = db
-        .get(channel + ".perm")
-        .value()
-        .map(user => user.name);
+    // const perm_list = db
+    //     .get(channel + ".perm")
+    //     .value()
+    //     .map(user => user.name);
 
-    if (perm_list.length === 0) {
-        return { names_string: "Emtpy list", perm_list: perm_list };
-    }
-    return { names_string: perm_list.join(" "), perm_list: perm_list };
+    // if (perm_list.length === 0) {
+    //     return { names_string: "Emtpy list", perm_list: perm_list };
+    // }
+    // return { names_string: perm_list.join(" "), perm_list: perm_list };
 };
 
-const get_permission = async info_object => {
-    let { channel, message, userstate, split_msg } = info_object;
-    let { perm_list } = await list_permission(info_object);
+const list_permission_string = async info_object => {
+    const users = await list_permission(info_object);
+    if (users.length === 0) {
+        return "Empty list";
+    }
+    return users.map(user => user.name).join(", ");
+};
+
+const is_permissioned = async info_object => {
+    let { channel, userstate } = info_object;
+    const perm_list = await list_permission(info_object);
+    const is_listed = perm_list.find(user => user.name === userstate.username);
     console.log("perm_list: ", perm_list);
-    if (userstate.username === channel) {
-        console.log(1);
+    if (is_listed) {
+        return true;
+    } else if (userstate.username === channel) {
         return true;
     } else if (userstate.mod) {
-        console.log(2);
         return true;
-    } else if (perm_list && perm_list.includes(userstate["display-name"])) {
-        console.log(3);
-        return true;
-    } else {
-        const followage = await get_followage(info_object);
-        let two_years = 730;
-        if (parseInt(followage) >= two_years) {
-            console.log(4);
-            return true;
-        }
-        return false;
     }
+
+    return false;
+    // } else {
+    //     const followage = await get_followage(info_object);
+    //     let two_years = 730;
+    //     if (parseInt(followage) >= two_years) {
+    //         console.log(4);
+    //         return true;
+    //     }
+    //     return false;
+    // }
 };
 
 const get_timezone = async info_object => {
@@ -484,7 +493,7 @@ const join_channel = async info_object => {
         channel_list.push(userstate.username);
         fs.writeFileSync("./private/channels.json", JSON.stringify(channel_list));
         db.get("users")
-            .push({ name: userstate.username, commands: {}, settings: {}, components: {} })
+            .push({ name: userstate.username, settings: {}, commands: [], components: [], permission: [] })
             .write();
         return "I have joined your channel, use !help to learn my commands.";
     }
@@ -662,6 +671,7 @@ module.exports = {
     get_tweet_info,
     add_permission,
     list_permission,
+    list_permission_string,
     get_timezone,
     join_channel,
     leave_channel,

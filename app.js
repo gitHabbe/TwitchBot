@@ -35,6 +35,9 @@ client.on("chat", async (channel, userstate, message, self) => {
     let res;
     if (self) return;
     switch (split_msg[0]) {
+        case "!test":
+            await commands.list_permission(info_object);
+            break;
         case "!wr":
             res = await commands.get_wr(info_object);
             client.say(channel, res);
@@ -199,9 +202,9 @@ client.on("chat", async (channel, userstate, message, self) => {
             break;
         case "!getperm":
             commands
-                .list_permission(info_object, true)
+                .list_permission_string(info_object)
                 .then(res => {
-                    client.say(channel, res.names_string);
+                    client.say(channel, res);
                 })
                 .catch(err => {
                     console.log(err);
