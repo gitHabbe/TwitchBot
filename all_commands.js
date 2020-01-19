@@ -209,6 +209,7 @@ const set_highlight = async info_object => {
     let { channel, message, userstate, split_msg } = info_object;
     const permission = await is_permissioned(info_object);
     if (!permission) return "Permission denied";
+    if (message.slice(4).toLowerCase() === "all") return '"all" is a reserved name.';
 
     const adapter = new FileSync("./private/database.json");
     const db = low(adapter);
@@ -283,25 +284,23 @@ const delete_highlight = async info_object => {
     const target_highlight = message.slice(5);
     const adapter = new FileSync("./private/database.json");
     const db = low(adapter);
+    const hl_list = db
+        .get("users")
+        .find({ name: channel })
+        .get("highlights");
 
+    console.log("LOG: target_highlight", target_highlight);
     if (target_highlight === "all") {
-        db.get(channel + ".highlights")
-            .remove()
+        db.get("users")
+            .find({ name: channel })
+            .set("highlights", [])
             .write();
         return "All highlights deleted.";
     }
-    if (
-        db
-            .get(channel + ".highlights")
-            .value()
-            .findIndex(hl => hl.hl_name === target_highlight) != -1
-    ) {
-        db.get(channel + ".highlights")
-            .remove({ hl_name: target_highlight })
-            .write();
-        return "Highlight " + target_highlight + " has been removed.";
-    }
-    return "Highlight not found.";
+    const target_hl = hl_list.find({ hl_name: target_highlight }).value();
+    if (!target_hl) return "Highlight not found.";
+    hl_list.remove({ hl_name: target_highlight }).write();
+    return target_highlight + " deleted.";
 };
 
 const get_followage = async info_object => {
