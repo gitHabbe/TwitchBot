@@ -119,8 +119,8 @@ const new_cc = async info_object => {
     const is_reserved = dbw
         .get("words")
         .value()
-        .find(word => word === split_msg[0]);
-    if (is_reserved) return split_msg[0] + " is a reserved command.";
+        .find(word => word === split_msg[1]);
+    if (is_reserved) return split_msg[1] + " is a reserved command.";
 
     const content = split_msg.slice(2).join(" ");
 
