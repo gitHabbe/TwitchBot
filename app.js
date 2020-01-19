@@ -32,21 +32,16 @@ client.on("chat", async (channel, userstate, message, self) => {
         split_msg,
         self
     };
+    let res;
     if (self) return;
     switch (split_msg[0]) {
         case "!wr":
-            const res = await commands.get_wr(info_object);
+            res = await commands.get_wr(info_object);
             client.say(channel, res);
             break;
         case "!pb":
-            commands
-                .get_pb(info_object)
-                .then(res => {
-                    client.say(channel, res);
-                })
-                .catch(err => {
-                    console.log("pb err");
-                });
+            res = await commands.get_pb(info_object);
+            client.say(channel, res);
             break;
         case "!ilwr":
             commands

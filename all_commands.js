@@ -474,6 +474,7 @@ const join_channel = async info_object => {
 
     const adapter = new FileSync("./private/database.json");
     const db = low(adapter);
+    db.defaults({ users: [] }).write();
     const channel_list = JSON.parse(fs.readFileSync("./private/channels.json", "utf8"));
     const isJoined = channel_list.find(name => name === userstate.username);
 
@@ -482,34 +483,28 @@ const join_channel = async info_object => {
     } else {
         channel_list.push(userstate.username);
         fs.writeFileSync("./private/channels.json", JSON.stringify(channel_list));
-        if (!db.has(channel).value()) {
-            db.set(channel, {
-                "user-settings": {
-                    slots: false
-                }
-            }).write();
-        }
+        db.get("users")
+            .push({ name: userstate.username, commands: {}, settings: {}, components: {} })
+            .write();
         return "I have joined your channel, use !help to learn my commands.";
     }
 };
 
 const leave_channel = async info_object => {
-    let { channel, message, userstate, split_msg } = info_object;
+    let { channel, userstate } = info_object;
     if (channel != "habbe2") return;
-    console.log("test");
-    return;
-    // const channel_string = fs.readFileSync('./private/channels.txt', 'utf8').slice(0, -1);
-    // channel_list = channel_string.split('\n');
-    const channel_list = JSON.parse(fs.readFileSync("./private/channels.json", "utf8"));
-    console.log(channel_list);
-    const channel_list_index = channel_list.indexOf(userstate.username);
-    console.log("channel_list_index: ", channel_list_index);
-    if (channel_list_index > -1) {
-        channel_list.splice(channel_list_index, 1);
-        // channel_list.join('\n');
-        console.log(channel_list);
-        // fs.writeFileSync("./private/channels.txt", channel_list + "\n");
+
+    const adapter = new FileSync("./private/database.json");
+    const db = low(adapter);
+    let channel_list = JSON.parse(fs.readFileSync("./private/channels.json", "utf8"));
+    const isJoined = channel_list.find(name => name === userstate.username);
+
+    if (isJoined) {
+        channel_list = channel_list.filter(name => name !== userstate.username);
         fs.writeFileSync("./private/channels.json", JSON.stringify(channel_list));
+        db.get("users")
+            .remove({ name: userstate.username })
+            .write();
         return "I have left your channel.";
     } else {
         return "I'm not in your channel.";
