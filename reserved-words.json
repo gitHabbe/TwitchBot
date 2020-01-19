@@ -1,0 +1,33 @@
+{
+    "words": [
+        "!wr",
+        "!pb",
+        "!ilwr",
+        "!ilpb",
+        "!enable",
+        "!disable",
+        "!addcmd",
+        "!newcmd",
+        "!deletecmd",
+        "!removecmd",
+        "!delcmd",
+        "!uptime",
+        "!title",
+        "!hl",
+        "!hls",
+        "!gethl",
+        "!dhl",
+        "!followage",
+        "!slots",
+        "!addperm",
+        "!getperm",
+        "!delperm",
+        "!time",
+        "!connect",
+        "!join",
+        "!disconnect",
+        "!part",
+        "!leave",
+        "!help"
+    ]
+}
