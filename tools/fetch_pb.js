@@ -2,10 +2,11 @@ const util = require("./util.js");
 const fetching = require("./fetching.js");
 
 async function fetch_pb(info_object) {
-    let { channel, category_id, fuse_hit } = info_object;
-    let speedrunner = await fetching.get_speedrunner(channel);
+    let { game_id, category_id, category, runner } = info_object;
+    let speedrunner = await fetching.get_speedrunner(runner);
+    console.log("LOG: functionfetch_pb -> speedrunner.data.data", speedrunner.data.data.length);
     speedrunner = speedrunner.data.data.find(
-        runner => runner.names.international.toLowerCase() === channel.toLowerCase()
+        srunner => srunner.names.international.toLowerCase() === runner.toLowerCase()
     );
 
     const pbs_uri = util.get_game_link(speedrunner, "personal-bests");
@@ -14,7 +15,7 @@ async function fetch_pb(info_object) {
     const pb_time = util.secondsToString2(the_run.run.times.primary_t);
     const days_ago = Math.floor((new Date() - new Date(the_run.run.date)) / 86400000);
 
-    return `${channel}'s ${fuse_hit.category} PB: ${pb_time}, ${days_ago} days ago`;
+    return `${runner}'s ${category} PB: ${pb_time}, ${days_ago} days ago`;
 }
 
 module.exports = {

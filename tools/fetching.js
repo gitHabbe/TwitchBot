@@ -10,7 +10,8 @@ const fetch_game_levels = id => {
 };
 
 const get_speedrunner = name => {
-    return axios.get(encodeURI(`https://www.speedrun.com/api/v1/users?name=${name}`));
+    // return axios.get(encodeURI(`https://www.speedrun.com/api/v1/users?name=${name}`));
+    return axios.get(encodeURI(`https://www.speedrun.com/api/v1/users?lookup=${name}`));
 };
 
 const get_twitch_channel = channel => {

@@ -12,8 +12,6 @@ const wr = require("./tools/fetch_wr.js");
 const pb = require("./tools/fetch_pb.js");
 
 const get_wr = async info_object => {
-    let { channel, userstate, message, split_msg } = info_object;
-    // info_object.channel = 'Wilko'
     const { game_id, category_id, category } = await tg.set_game_and_category(info_object);
     info_object.game_id = game_id;
     info_object.category_id = category_id;
@@ -22,22 +20,21 @@ const get_wr = async info_object => {
 };
 
 const get_pb = async info_object => {
-    let { channel, userstate, message, split_msg } = info_object;
-    console.log(info_object.split_msg);
-    // info_object.channel = 'Fuzzyness'
+    let { channel, split_msg } = info_object;
     if (split_msg.length === 1) {
         info_object.runner = channel;
     } else {
-        info_object.channel = info_object.split_msg[1];
+        info_object.runner = info_object.split_msg[1];
         info_object.split_msg.splice(1, 1);
-        console.log(info_object.split_msg);
+        console.log("LOG: info_object.split_msg", info_object.split_msg);
+        // console.log("LOG: info_object.split_msg", info_object.split_msg);
     }
-    console.log(info_object.split_msg);
-    const game_id_and_category = await tg.set_game_and_category(info_object);
-    info_object.game_id = game_id_and_category.game_id;
-    info_object.category_id = game_id_and_category.category_id;
-    info_object.fuse_hit = game_id_and_category.fuse_hit;
-    console.log(info_object.game_id, info_object.category_id, info_object.fuse_hit);
+    const { game_id, category_id, category } = await tg.set_game_and_category(info_object);
+    console.log("LOG: game_id, category_id, category", game_id, category_id, category);
+    info_object.game_id = game_id;
+    info_object.category_id = category_id;
+    info_object.category = category;
+    // return "1";
 
     return pb.fetch_pb(info_object);
 };
@@ -69,6 +66,8 @@ ${days_ago} days ago`;
 };
 
 const get_il_pb = async info_object => {
+    console.log("testasdsa");
+
     let { channel, userstate, message, split_msg } = info_object;
 
     runner_msg = split_msg[1];

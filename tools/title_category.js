@@ -10,6 +10,7 @@ const get_game_id = async info_object => {
     const adapter = new FileSync("./private/database.json");
     const db = low(adapter);
     const gameDB = db.get("games");
+    console.log("LOG: msg_game", msg_game);
     if (msg_game) {
         const is_gameDB = gameDB.find({ abbrev: msg_game }).value();
         // console.log("LOG: is_gameDB", is_gameDB);
