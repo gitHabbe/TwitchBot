@@ -188,13 +188,12 @@ const delete_cc = async info_object => {
 const get_uptime = async info_object => {
     let { channel, message } = info_object;
     const twitch_channel = await fetching.get_twitch_channel(channel);
+    if (twitch_channel.data.data.length === 0) return channel + " is not online.";
     const uptime_date = new Date(twitch_channel.data.data[0].started_at);
     const seconds_ago = Math.floor((new Date() - uptime_date) / 1000);
     const time_string = util.secondsToString(seconds_ago);
-    console.log(time_string);
+
     return time_string;
-    // console.log(uptime_date);
-    // console.log(twitch_channel.data.data);
 };
 
 const get_title = async info_object => {

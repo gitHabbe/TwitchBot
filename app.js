@@ -107,14 +107,8 @@ client.on("chat", async (channel, userstate, message, self) => {
                 });
             break;
         case "!uptime":
-            commands
-                .get_uptime(info_object)
-                .then(res => {
-                    client.say(channel, res);
-                })
-                .catch(err => {
-                    client.say(channel, info_object.channel + " is not online");
-                });
+            res = await commands.get_uptime(info_object);
+            client.say(channel, res);
             break;
         case "!title":
             commands
