@@ -385,7 +385,6 @@ const add_permission = async info_object => {
     const userDB = db.get("users").find({ name: channel });
     const is_listed = userDB.value().permission.find(user => user.name === split_msg[1]);
 
-    console.log("TCL: is_listed", is_listed);
     if (is_listed) return `${split_msg[1]} is already on the list`;
 
     userDB
@@ -400,6 +399,25 @@ const add_permission = async info_object => {
     return `${split_msg[1]} added to permission list`;
 };
 
+const remove_permission = async info_object => {
+    let { channel, userstate, split_msg } = info_object;
+    if (channel !== userstate.username) return "Only streamer can remove permissions.";
+    if (!split_msg[1]) return "No user specified";
+
+    const adapter = new FileSync("./private/database.json");
+    const db = low(adapter);
+
+    const userDB = db.get("users").find({ name: channel });
+    const is_listed = userDB.value().permission.find(user => user.name === split_msg[1]);
+    if (!is_listed) return split_msg[1] + " not on list";
+    userDB
+        .get("permission")
+        .remove({ name: split_msg[1] })
+        .write();
+
+    return split_msg[1] + " has been removed from list.";
+};
+
 const list_permission = async info_object => {
     let { channel } = info_object;
     const adapter = new FileSync("./private/database.json");
@@ -410,18 +428,6 @@ const list_permission = async info_object => {
         .value();
 
     return dbUser.permission;
-    // if (!db.has(channel).value()) db.set(channel, {}).write();
-    // if (!db.has(channel + ".perm").value()) db.set(channel + ".perm", []).write();
-
-    // const perm_list = db
-    //     .get(channel + ".perm")
-    //     .value()
-    //     .map(user => user.name);
-
-    // if (perm_list.length === 0) {
-    //     return { names_string: "Emtpy list", perm_list: perm_list };
-    // }
-    // return { names_string: perm_list.join(" "), perm_list: perm_list };
 };
 
 const list_permission_string = async info_object => {
@@ -446,15 +452,6 @@ const is_permissioned = async info_object => {
     }
 
     return false;
-    // } else {
-    //     const followage = await get_followage(info_object);
-    //     let two_years = 730;
-    //     if (parseInt(followage) >= two_years) {
-    //         console.log(4);
-    //         return true;
-    //     }
-    //     return false;
-    // }
 };
 
 const get_timezone = async info_object => {
@@ -670,6 +667,7 @@ module.exports = {
     get_youtube_info,
     get_tweet_info,
     add_permission,
+    remove_permission,
     list_permission,
     list_permission_string,
     get_timezone,

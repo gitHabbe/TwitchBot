@@ -210,6 +210,16 @@ client.on("chat", async (channel, userstate, message, self) => {
                     console.log(err);
                 });
             break;
+        case "!delperm":
+            commands
+                .remove_permission(info_object)
+                .then(res => {
+                    client.say(channel, res);
+                })
+                .catch(err => {
+                    console.log(err);
+                });
+            break;
         case "!time":
             client.say(channel, "Doesnt work yet");
             // commands.get_timezone(info_object)
