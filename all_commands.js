@@ -469,18 +469,15 @@ const get_timezone = async info_object => {
 };
 
 const join_channel = async info_object => {
-    if (channel != "habbe2") return;
     let { channel, userstate } = info_object;
+    if (channel != "habbe2") return;
 
     const adapter = new FileSync("./private/database.json");
     const db = low(adapter);
-
     const channel_list = JSON.parse(fs.readFileSync("./private/channels.json", "utf8"));
+    const isJoined = channel_list.find(name => name === userstate.username);
 
-    console.log(channel_list);
-    const joined_boolean = channel_list.find(name => name === userstate.username);
-
-    if (joined_boolean) {
+    if (isJoined) {
         return "I'm already in your channel.";
     } else {
         // fs.appendFileSync('./private/channels.txt', userstate.username + '\n');
