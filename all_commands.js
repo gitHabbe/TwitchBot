@@ -16,14 +16,11 @@ const get_wr = async info_object => {
     // info_object.channel = 'Wilko'
     const game_id_and_category = await tg.set_game_and_category(info_object);
     info_object.fuse_hit = game_id_and_category.fuse_hit;
-    console.log("info_object.fuse_hit: ", info_object.fuse_hit);
     info_object.game_id = game_id_and_category.game_id;
-    console.log("info_object.game_id: ", info_object.game_id);
     info_object.category_id = game_id_and_category.category_id;
-    console.log("info_object.category_id: ", info_object.category_id);
-    const test = wr.fetch_wr(info_object);
+    const res = wr.fetch_wr(info_object);
 
-    return test;
+    return res;
 };
 
 const get_pb = async info_object => {
