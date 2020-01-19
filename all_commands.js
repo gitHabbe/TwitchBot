@@ -143,13 +143,14 @@ const check_cc = async info_object => {
     const adapter = new FileSync("./private/database.json");
     const db = low(adapter);
 
-    let test = db
-        .get(channel + ".cc")
-        .find({ cmd_name: split_msg[0] })
-        .value();
-    if (test) return test.cmd_text;
-    return "Command not found";
-    console.log("test: ", test);
+    const userDB = db.get("users").find({ name: channel });
+    const is_used = userDB
+        .get("commands")
+        .value()
+        .find(cmd => cmd.name === split_msg[0]);
+    if (!is_used) return "Command not found.";
+
+    return is_used.content;
 };
 
 const delete_cc = async info_object => {

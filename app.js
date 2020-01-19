@@ -35,9 +35,6 @@ client.on("chat", async (channel, userstate, message, self) => {
     let res;
     if (self) return;
     switch (split_msg[0]) {
-        case "!test":
-            await commands.list_permission(info_object);
-            break;
         case "!wr":
             res = await commands.get_wr(info_object);
             client.say(channel, res);
@@ -265,26 +262,21 @@ client.on("chat", async (channel, userstate, message, self) => {
     }
     if (split_msg[0].startsWith("!")) {
         console.log("INSIDE");
-        const adapter = new FileSync("./private/database.json");
+        const adapter = new FileSync("./reserved-words.json");
         const db = low(adapter);
-        if (db.has("reserved-words").value()) {
-            const reserved_bool =
-                db
-                    .get("reserved-words")
-                    .value()
-                    .indexOf(split_msg[0]) >= 0;
-            if (!reserved_bool) {
-                commands
-                    .check_cc(info_object)
-                    .then(res => {
-                        client.say(channel, res);
-                    })
-                    .catch(err => {
-                        console.log(err);
-                    });
-            }
-            console.log("reserved_bool: ", reserved_bool);
-        }
+        const is_reserved = db
+            .get("words")
+            .value()
+            .find(word => word === split_msg[0]);
+        if (is_reserved) return split_msg[0] + " is a reserved command.";
+        commands
+            .check_cc(info_object)
+            .then(res => {
+                client.say(channel, res);
+            })
+            .catch(err => {
+                console.log(err);
+            });
         console.log("AFTER IF");
     }
     if (message.indexOf("https://www.youtube.com") > -1) {
