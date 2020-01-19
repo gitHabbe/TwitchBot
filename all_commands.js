@@ -212,7 +212,13 @@ const set_highlight = async info_object => {
 
     const adapter = new FileSync("./private/database.json");
     const db = low(adapter);
-    // channel = 'Wilko'
+    const userDB = db
+        .get("users")
+        .find({ name: channel })
+        .get("highlights");
+    const is_taken = userDB.find({ hl_name: message.slice(4) }).value();
+    if (is_taken) return "Highlight-name already exists.";
+    channel = "lezonta";
     const twitch_channel = await fetching.get_twitch_channel(channel);
     const user_video_list = await fetching.get_twitch_videos(twitch_channel.data.data[0].user_id);
     const highlight_id = user_video_list.data.data[0].id;
@@ -220,42 +226,35 @@ const set_highlight = async info_object => {
     const uptime_date = new Date(twitch_channel.data.data[0].started_at);
     const seconds_ago = Math.floor((new Date() - uptime_date) / 1000);
 
-    if (!db.has(channel).value()) db.set(channel, []).write();
-    if (!db.has(channel + ".highlights").value()) db.set(channel + ".highlights", []).write();
+    userDB
+        .push({
+            hl_name: message.slice(4),
+            hl_url: highlight_url,
+            made_by: userstate.username,
+            timestamp: seconds_ago,
+            hl_id: highlight_id,
+            date: new Date()
+        })
+        .write();
 
-    if (
-        !db
-            .get(channel + ".highlights")
-            .find({ hl_name: message.slice(4) })
-            .value()
-    ) {
-        db.get(channel + ".highlights")
-            .push({
-                hl_name: message.slice(4),
-                hl_url: highlight_url,
-                made_by: userstate.username,
-                timestamp: seconds_ago,
-                hl_id: highlight_id,
-                date: new Date()
-            })
-            .write();
-        return `Highlight created: ${message.slice(4)}`;
-    } else {
-        return "Highlight already exists";
-    }
+    return `Highlight created: ${message.slice(4)}`;
 };
 
 const get_highlights = async info_object => {
     let { channel, message, userstate } = info_object;
+    const permission = await is_permissioned(info_object);
+    if (!permission) return "Permission denied";
     const adapter = new FileSync("./private/database.json");
     const db = low(adapter);
-    const all_states = db.getState();
-    // console.log(all_states[channel])
-    // console.log(all_states[channel].highlights)
-    if (all_states[channel].highlights && all_states[channel].highlights.length != 0) {
-        return "Highlights: " + all_states[channel].highlights.map(hl => hl.hl_name).join(", ");
-    }
-    return "Streamer has no highlights";
+    const hl_list = db
+        .get("users")
+        .find({ name: channel })
+        .get("highlights")
+        .value();
+
+    if (hl_list.length === 0) return "No highlights created.";
+
+    return hl_list.map(hl => hl.hl_name).join(", ");
 };
 
 const get_target_highlight = async info_object => {
@@ -263,18 +262,22 @@ const get_target_highlight = async info_object => {
     const adapter = new FileSync("./private/database.json");
     const db = low(adapter);
     const target_highlight = message.slice(7);
-    const all_states = db.getState();
-    const highlight_hit = all_states[channel].highlights.find(hl => hl.hl_name === target_highlight);
+    const hl_list = db
+        .get("users")
+        .find({ name: channel })
+        .get("highlights")
+        .value();
+    const highlight_hit = hl_list.find(hl => hl.hl_name === target_highlight);
+    if (!highlight_hit) return "Highlight not found.";
 
     const timestamp = util.secondsToString(highlight_hit.timestamp - 100).replace(/\s/g, "");
-    console.log(timestamp);
-    // highlight_hit.hl_name + ', ' + res.hl_url + '?t=' + (res.timestamp - 150) + 's')
+
     return highlight_hit.hl_name + ", " + highlight_hit.hl_url + "?t=" + timestamp;
 };
 
 const delete_highlight = async info_object => {
     let { channel, message, userstate } = info_object;
-    const permission = await get_permission(info_object);
+    const permission = await is_permissioned(info_object);
     if (!permission) return "Permission denied";
 
     const target_highlight = message.slice(5);
@@ -304,7 +307,7 @@ const delete_highlight = async info_object => {
 const get_followage = async info_object => {
     let { channel, userstate } = info_object;
     const streamer = await fetching.get_twitch_channel(channel);
-    if (streamer.data.data.length === 0) return "Channel offline.";
+    if (streamer.data.data.length === 0) return "Streamer offline. Can't find followage.";
     const streamer_id = streamer.data.data[0].user_id;
 
     let followage_info = await fetching.get_twitch_followage(streamer_id, userstate["user-id"]);
@@ -485,7 +488,7 @@ const join_channel = async info_object => {
     channel_list.push(userstate.username);
     fs.writeFileSync("./private/channels.json", JSON.stringify(channel_list));
     db.get("users")
-        .push({ name: userstate.username, settings: {}, commands: [], components: [], permission: [] })
+        .push({ name: userstate.username, settings: {}, highlights: [], commands: [], components: [], permission: [] })
         .write();
 
     return "I have joined your channel, use !help to learn my commands.";
