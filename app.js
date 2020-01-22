@@ -213,7 +213,7 @@ client.on("chat", async (channel, userstate, message, self) => {
         case "!connect":
         case "!join":
             commands
-                .join_channel(info_object)
+                .join_channel(info_object, client)
                 .then(res => {
                     client.say(channel, res);
                 })
@@ -226,7 +226,7 @@ client.on("chat", async (channel, userstate, message, self) => {
         case "!part":
         case "!leave":
             commands
-                .leave_channel(info_object)
+                .leave_channel(info_object, client)
                 .then(res => {
                     client.say(channel, res);
                 })

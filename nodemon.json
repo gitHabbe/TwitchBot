@@ -1,8 +1,7 @@
 {
     "verbose": true,
-    "ignore": [
-        "./private/database.json",
-        "./private/game_id_list.json",
-        "./private/options.json"
-    ]
+    "ignore": ["private/*.json"],
+    "nodemonConfig": {
+        "ignore": ["private/*.json"]
+    }
 }

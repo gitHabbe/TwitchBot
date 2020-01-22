@@ -16,6 +16,7 @@ const get_wr = async info_object => {
     info_object.game_id = game_id;
     info_object.category_id = category_id;
     info_object.category = category;
+
     return wr.fetch_wr(info_object);
 };
 
@@ -469,14 +470,16 @@ const get_timezone = async info_object => {
     // console.log(m.format(usTimeFormat));
 };
 
-const join_channel = async info_object => {
-    let { channel, userstate } = info_object;
+const join_channel = async (info_object, client) => {
+    let { channel, userstate, split_msg } = info_object;
     if (channel != "habbe2") return;
 
     const adapter = new FileSync("./private/database.json");
     const db = low(adapter);
     db.defaults({ users: [] }).write();
     const channel_list = JSON.parse(fs.readFileSync("./private/channels.json", "utf8"));
+
+    if (userstate.username === "habbe" && split_msg[1]) userstate.username = split_msg[1];
     const isJoined = channel_list.find(name => name === userstate.username);
 
     if (isJoined) return "I'm already in your channel.";
@@ -487,28 +490,37 @@ const join_channel = async info_object => {
         .push({ name: userstate.username, settings: {}, highlights: [], commands: [], components: [], permission: [] })
         .write();
 
-    return "I have joined your channel, use !help to learn my commands.";
+    client
+        .join(userstate.username)
+        .then(data => {
+            console.log("LOG: data", data);
+        })
+        .catch(function(err) {
+            console.log("LOG: err", err);
+        });
+
+    return "I have joined your channel, use !help to my commands.";
 };
 
-const leave_channel = async info_object => {
-    let { channel, userstate } = info_object;
-    if (channel != "habbe2") return;
-
+const leave_channel = async (info_object, client) => {
+    let { channel, userstate, split_msg } = info_object;
     const adapter = new FileSync("./private/database.json");
     const db = low(adapter);
     let channel_list = JSON.parse(fs.readFileSync("./private/channels.json", "utf8"));
+    if (userstate.username === "habbe" && split_msg[1]) userstate.username = split_msg[1];
     const isJoined = channel_list.find(name => name === userstate.username);
 
-    if (isJoined) {
-        channel_list = channel_list.filter(name => name !== userstate.username);
-        fs.writeFileSync("./private/channels.json", JSON.stringify(channel_list));
-        db.get("users")
-            .remove({ name: userstate.username })
-            .write();
-        return "I have left your channel.";
-    } else {
-        return "I'm not in your channel.";
-    }
+    if (channel === "habbe2" && !isJoined) return "I'm not in your channel.";
+    if (userstate.username !== channel && channel !== "habbe2") return "Permission denied.";
+
+    channel_list = channel_list.filter(name => name !== userstate.username);
+    fs.writeFileSync("./private/channels.json", JSON.stringify(channel_list));
+    db.get("users")
+        .remove({ name: userstate.username })
+        .write();
+    client.part(userstate.username);
+
+    return "I have left your channel.";
 };
 
 const enable_component = async info_object => {
