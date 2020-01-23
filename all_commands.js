@@ -595,66 +595,49 @@ const help_command = async info_object => {
             "dhl, wr, pb, ilwr, ilpb, addperm, getperm, " +
             "title, uptime, leave"
         );
-    } else {
-        split_msg[1] = split_msg[1].replace(/!/g, "");
-        switch (split_msg[1]) {
-            case "enable":
-                return "Use !enable [component] to enable a component.";
-                break;
-            case "disable":
-                return "Use !disable [component] to disable a component.";
-                break;
-            case "newcmd":
-                return "Use !newcmd [command-name] [command-text] to create a custom command. (!addcmd also works)";
-                break;
-            case "delcmd":
-                return "Use !delcmd [command-name] to delete a custom command. !deletecmd and !removecmd also works.";
-                break;
-            case "hl":
-                return "Use !hl [highlight-name] to create a highlight timestamp.";
-                break;
-            case "hls":
-                return "Use !hls to list all your highlight-names.";
-                break;
-            case "dhl":
-                return "Use !dhl [highlight-name] to delete a highlight.";
-                break;
-            case "addperm":
-                return "Use !addperm [name] to give a person permission to manage highlights/customcommands/permissions.";
-                break;
-            case "getperm":
-                return "Use !getperm to list all people with extra permission.";
-                break;
-            case "title":
-                return "Displays your current title.";
-                break;
-            case "uptime":
-                return "Shows how long your stream has been live.";
-                break;
-            case "wr":
-                return (
-                    "Use !wr [game] [category] to get world record time. Leave [category] empty to get category from title. " +
-                    "Leave [game] empty to get game from current game being played."
-                );
-                break;
-            case "ilwr":
-                return "Use !ilwr [game] [level] [vehicle] to get world record time. Currently only works for Diddy Kong Racing.";
-                break;
-            case "pb":
-                return (
-                    "Use !pb [player-name] [game] [category] to get personal best time. Leave [category] empty to get category from title. " +
-                    "Leave [game] empty to get game from current game being played."
-                );
-                break;
-            case "ilpb":
-                return "Use !ilpb [player] [game] [level] [vehicle] to get personal best time. Currently only works for Diddy Kong Racing.";
-                break;
-            case "leave":
-                return "Make me leave your channel. !part also works.";
-                break;
-            default:
-                break;
-        }
+    }
+
+    split_msg[1] = split_msg[1].replace(/!/g, "");
+    switch (split_msg[1]) {
+        case "enable":
+            return "Use !enable [component] to enable a component.";
+        case "disable":
+            return "Use !disable [component] to disable a component.";
+        case "newcmd":
+            return "Use !newcmd [command-name] [command-text] to create a custom command. (!addcmd also works)";
+        case "delcmd":
+            return "Use !delcmd [command-name] to delete a custom command. !deletecmd and !removecmd also works.";
+        case "hl":
+            return "Use !hl [highlight-name] to create a highlight timestamp.";
+        case "hls":
+            return "Use !hls to list all your highlight-names.";
+        case "dhl":
+            return "Use !dhl [highlight-name] to delete a highlight.";
+        case "addperm":
+            return "Use !addperm [name] to give a person permission to manage highlights/customcommands/permissions.";
+        case "getperm":
+            return "Use !getperm to list all people with extra permission.";
+        case "title":
+            return "Displays your current title.";
+        case "uptime":
+            return "Shows how long your stream has been live.";
+        case "wr":
+            return (
+                "Use !wr [game] [category] to get world record time. Leave [category] empty to get category from title. " +
+                "Leave [game] empty to get game from current game being played."
+            );
+        case "ilwr":
+            return "Use !ilwr [game] [level] [vehicle] to get world record time. Currently only works for Diddy Kong Racing.";
+        case "pb":
+            return (
+                "Use !pb [player-name] [game] [category] to get personal best time. Leave [category] empty to get category from title. " +
+                "Leave [game] empty to get game from current game being played."
+            );
+        case "ilpb":
+            return "Use !ilpb [player] [game] [level] [vehicle] to get personal best time. Currently only works for Diddy Kong Racing.";
+        case "leave":
+            return "Make me leave your channel. !part also works.";
+        default:
     }
 };
 
