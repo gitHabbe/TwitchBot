@@ -44,81 +44,39 @@ client.on("chat", async (channel, userstate, message, self) => {
             client.say(channel, res);
             break;
         case "!ilwr":
-            commands
-                .get_il_wr(info_object)
-                .then(res => {
-                    client.say(channel, res);
-                })
-                .catch(err => {
-                    console.log(err);
-                });
+            res = await commands.get_il_wr(info_object);
+            client.say(channel, res);
             break;
         case "!ilpb":
-            commands
-                .get_il_pb(info_object)
-                .then(res => {
-                    client.say(channel, res);
-                })
-                .catch(err => {
-                    console.log(err);
-                });
+            res = await commands.get_il_pb(info_object);
+            client.say(channel, res);
             break;
         case "!enable":
-            commands
-                .enable_component(info_object)
-                .then(res => {
-                    client.say(channel, res);
-                })
-                .catch(err => {
-                    console.log(err);
-                });
+            res = await commands.enable_component(info_object);
+            client.say(channel, res);
             break;
         case "!disable":
-            commands
-                .disable_component(info_object)
-                .then(res => {
-                    client.say(channel, res);
-                })
-                .catch(err => {
-                    console.log(err);
-                });
+            res = await commands.disable_component(info_object);
+            client.say(channel, res);
             break;
         case "!addcmd":
         case "!newcmd":
-            commands
-                .new_cc(info_object)
-                .then(res => {
-                    client.say(channel, res);
-                })
-                .catch(err => {
-                    console.log("New CC err");
-                });
+            res = await commands.new_cc(info_object);
+            client.say(channel, res);
             break;
         case "!deletecmd":
         case "!removecmd":
         case "!delcmd":
-            commands
-                .delete_cc(info_object)
-                .then(res => {
-                    client.say(channel, res);
-                })
-                .catch(err => {
-                    console.log("Delete CC err");
-                });
+            res = await commands.delete_cc(info_object);
+            client.say(channel, res);
             break;
         case "!uptime":
             res = await commands.get_uptime(info_object);
             client.say(channel, res);
             break;
         case "!title":
-            commands
-                .get_title(info_object)
-                .then(res => {
-                    client.say(channel, res);
-                })
-                .catch(err => {
-                    console.log(err);
-                });
+            res = await commands.get_title(info_object);
+            client.say(channel, res);
             break;
         case "!hl":
             commands
@@ -206,7 +164,7 @@ client.on("chat", async (channel, userstate, message, self) => {
                 });
             break;
         case "!time":
-            client.say(channel, "Doesnt work yet");
+            // client.say(channel, "Doesnt work yet");
             // commands.get_timezone(info_object)
             // .then(res => { client.say(channel, res) }).catch(err => { console.log(err) })
             break;

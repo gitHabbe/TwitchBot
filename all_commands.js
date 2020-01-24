@@ -148,7 +148,7 @@ const check_cc = async info_object => {
     const userDB = db.get("users").find({ name: channel });
     const is_used = userDB
         .get("commands")
-        .find({ name: split_msg[1] })
+        .find({ name: split_msg[0] })
         .value();
     if (!is_used) return "Command not found.";
 
@@ -306,7 +306,7 @@ const get_followage = async info_object => {
     let followage_info = await fetching.get_twitch_followage(streamer_id, userstate["user-id"]);
     followage_info = followage_info.data.data;
     if (followage_info.length === 0) return userstate.username + " is not following " + channel;
-    const follow_date = new Date(followage_info.followed_at);
+    const follow_date = new Date(followage_info[0].followed_at);
     const days_ago = Math.floor((new Date() - follow_date) / 86400000);
 
     return userstate.username + " followage: " + days_ago + " days";
@@ -564,9 +564,6 @@ const disable_component = async info_object => {
 const slots = async info_object => {
     let { userstate, channel } = info_object;
 
-    var emotes = ["Kappa", "Jebaited", "MingLee", "DansGame", "PogChamp", "Kreygasm"];
-    var rolls = [];
-
     const adapter = new FileSync("./private/database.json");
     const db = low(adapter);
     const isEnabled = db
@@ -577,6 +574,8 @@ const slots = async info_object => {
         .find(comp => comp === "slots");
     if (!isEnabled) return "!slots is not enabled";
 
+    var emotes = ["Kappa", "Jebaited", "MingLee", "DansGame", "PogChamp", "Kreygasm"];
+    var rolls = [];
     for (var i = 0; i < 3; i++) {
         var randomNr = Math.floor(Math.random() * emotes.length);
         rolls.push(randomNr);
