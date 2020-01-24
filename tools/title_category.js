@@ -17,8 +17,8 @@ const get_game_id = async info_object => {
             gameData = gameData.data.data;
             if (gameData.length === 0) return msg_game + " is not a valid game.";
             const game_obj = {
-                id: gameData.id,
-                abbrev: gameData.abbreviation,
+                id: gameData[0].id,
+                abbrev: gameData[0].abbreviation,
                 categories: [],
                 added_by: userstate.username,
                 date: new Date()

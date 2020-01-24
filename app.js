@@ -122,7 +122,7 @@ client.on("chat", async (channel, userstate, message, self) => {
             break;
         case "!connect":
         case "!join":
-            res = await commands.join_channel(info_object);
+            res = await commands.join_channel(info_object, client);
             client.say(channel, res);
             break;
         case "!disconnect":
