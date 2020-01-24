@@ -28,24 +28,10 @@ const get_game_id = async info_object => {
                 .write();
 
             return game_obj;
-            // return fetching.get_speedrungame_by_abbreviation(msg_game).then(res => {
-            //     const game_obj = {
-            //         id: res.data.data[0].id,
-            //         abbrev: res.data.data[0].abbreviation,
-            //         categories: [],
-            //         added_by: userstate.username,
-            //         date: new Date()
-            //     };
-            //     db.get("games")
-            //         .push(game_obj)
-            //         .write();
-            //     return game_obj;
-            // });
         }
         return {
             id: is_gameDB.id,
-            abbrev: is_gameDB.abbrev,
-            error
+            abbrev: is_gameDB.abbrev
         };
     } else {
         const twitch_channel = await fetching.get_twitch_channel(channel);
@@ -104,7 +90,6 @@ const get_category = async info_object => {
         const twitch_channel = await fetching.get_twitch_channel(channel);
         fuse_hit = fuse.get_fuse_result(category_list, twitch_channel.data.data[0].title);
     }
-    // console.log("fuse_hit: ", fuse_hit);
 
     return {
         category_id: fuse_hit.id,
@@ -114,14 +99,13 @@ const get_category = async info_object => {
 };
 
 const set_game_and_category = async info_object => {
-    let { split_msg } = info_object;
     const game_id_and_category = await get_category(info_object);
 
     return game_id_and_category;
 };
 
 module.exports = {
-    get_game_id: get_game_id,
-    get_category: get_category,
-    set_game_and_category: set_game_and_category
+    get_game_id,
+    get_category,
+    set_game_and_category
 };

@@ -40,9 +40,11 @@ const get_pb = async info_object => {
 };
 
 const get_il_wr = async info_object => {
-    let { channel, userstate, message, split_msg } = info_object;
+    let { split_msg } = info_object;
     const game = await tg.get_game_id(info_object);
-    const level_list = await fetching.fetch_game_levels(game.game_id);
+    if (typeof game === "string") return "Game " + split_msg[1] + " does not exist.";
+    const level_list = await fetching.fetch_game_levels(game.id);
+    console.log("LOG: level_list", level_list.data.data);
     const level_list_names = level_list.data.data.map((level, index) => {
         let level_name = level.name;
         // console.log(level_name)
@@ -51,7 +53,7 @@ const get_il_wr = async info_object => {
             level_name = level_name.replace(")", "");
         }
         const lb_uri = level.links.find(link => link.rel === "leaderboard");
-        return { category: level_name, lb_uri: lb_uri.uri, index: index };
+        return { category: level_name, lb_uri: lb_uri.uri, index: index, name: level_name };
     });
     // console.log('level_list_names: ', level_list_names);
     const fuse_hit = fuse.get_fuse_result(level_list_names, split_msg.slice(2).join(" "));
@@ -66,9 +68,7 @@ ${days_ago} days ago`;
 };
 
 const get_il_pb = async info_object => {
-    console.log("testasdsa");
-
-    let { channel, userstate, message, split_msg } = info_object;
+    let { split_msg } = info_object;
 
     runner_msg = split_msg[1];
     info_object.split_msg.splice(1, 1);
@@ -77,20 +77,18 @@ const get_il_pb = async info_object => {
     speedrunner = speedrunner_list.data.data.find(
         runner => runner.names.international.toLowerCase() === runner_msg.toLowerCase()
     );
-    // console.log('speedrunner ', speedrunner);
 
-    console.log("info_object.split_msg: ", info_object.split_msg);
     const game = await tg.get_game_id(info_object);
-    const level_list = await fetching.fetch_game_levels(game.game_id);
+    if (typeof game === "string") return "Game " + split_msg[1] + " does not exist.";
+    const level_list = await fetching.fetch_game_levels(game.id);
     const level_list_names = level_list.data.data.map((level, index) => {
         let level_name = level.name;
-        // console.log(level_name)
         if (level_name.indexOf("(") > -1) {
             level_name = level_name.replace("(", "");
             level_name = level_name.replace(")", "");
         }
         const lb_uri = level.links.find(link => link.rel === "leaderboard");
-        return { category: level_name, lb_uri: lb_uri.uri, index: index };
+        return { category: level_name, lb_uri: lb_uri.uri, index: index, name: level_name };
     });
     const fuse_hit = fuse.get_fuse_result(level_list_names, split_msg.slice(2).join(" "));
     console.log("fuse_hit: ", fuse_hit);
@@ -98,7 +96,6 @@ const get_il_pb = async info_object => {
     const run = level_lb.data.data.runs.find(run => {
         return run.run.players[0].id === speedrunner.id;
     });
-    console.log("run: ", run);
     const player_time = util.millisecondsToString(run.run.times.primary_t);
     return `${speedrunner.names.international}'s ${fuse_hit.category} PB is ${player_time}. Place: ${run.place}`;
 };
