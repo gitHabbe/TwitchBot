@@ -5,33 +5,47 @@ const fuse = require("./fuse.js");
 const util = require("./util.js");
 
 const get_game_id = async info_object => {
-    let { channel, userstate, message, split_msg } = info_object;
+    let { channel, userstate, split_msg } = info_object;
     const msg_game = split_msg.length > 1 && split_msg[1];
     const adapter = new FileSync("./private/database.json");
     const db = low(adapter);
     const gameDB = db.get("games");
-    console.log("LOG: msg_game", msg_game);
     if (msg_game) {
         const is_gameDB = gameDB.find({ abbrev: msg_game }).value();
-        // console.log("LOG: is_gameDB", is_gameDB);
         if (!is_gameDB) {
-            return fetching.get_speedrungame_by_abbreviation(msg_game).then(res => {
-                const game_obj = {
-                    id: res.data.data[0].id,
-                    abbrev: res.data.data[0].abbreviation,
-                    categories: [],
-                    added_by: userstate.username,
-                    date: new Date()
-                };
-                db.get("games")
-                    .push(game_obj)
-                    .write();
-                return game_obj;
-            });
+            let gameData = await fetching.get_speedrungame_by_abbreviation(msg_game);
+            gameData = gameData.data.data;
+            if (gameData.length === 0) return msg_game + " is not a valid game.";
+            const game_obj = {
+                id: gameData.id,
+                abbrev: gameData.abbreviation,
+                categories: [],
+                added_by: userstate.username,
+                date: new Date()
+            };
+            db.get("games")
+                .push(game_obj)
+                .write();
+
+            return game_obj;
+            // return fetching.get_speedrungame_by_abbreviation(msg_game).then(res => {
+            //     const game_obj = {
+            //         id: res.data.data[0].id,
+            //         abbrev: res.data.data[0].abbreviation,
+            //         categories: [],
+            //         added_by: userstate.username,
+            //         date: new Date()
+            //     };
+            //     db.get("games")
+            //         .push(game_obj)
+            //         .write();
+            //     return game_obj;
+            // });
         }
         return {
             id: is_gameDB.id,
-            abbrev: is_gameDB.abbrev
+            abbrev: is_gameDB.abbrev,
+            error
         };
     } else {
         const twitch_channel = await fetching.get_twitch_channel(channel);
@@ -56,8 +70,9 @@ const get_game_id = async info_object => {
 
 const get_category = async info_object => {
     let { channel, split_msg } = info_object;
-    const { id, abbrev } = await get_game_id(info_object);
-    // console.log("LOG: abbrev", abbrev);
+    const gameData = await get_game_id(info_object);
+    if (typeof gameData === "string") return gameData;
+    const { id, abbrev } = gameData;
     let msg_category = split_msg.length > 2 && split_msg.slice(2);
 
     const adapter = new FileSync("./private/database.json");
@@ -101,9 +116,7 @@ const get_category = async info_object => {
 };
 
 const set_game_and_category = async info_object => {
-    let { channel, userstate, message, split_msg } = info_object;
-    const msg_game = split_msg.length > 1 && split_msg[1];
-    const msg_category = split_msg.length > 2 && split_msg[2];
+    let { split_msg } = info_object;
     const game_id_and_category = await get_category(info_object);
 
     return game_id_and_category;

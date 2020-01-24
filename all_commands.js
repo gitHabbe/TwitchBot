@@ -12,7 +12,9 @@ const wr = require("./tools/fetch_wr.js");
 const pb = require("./tools/fetch_pb.js");
 
 const get_wr = async info_object => {
-    const { game_id, category_id, category } = await tg.set_game_and_category(info_object);
+    const gameData = await tg.set_game_and_category(info_object);
+    if (typeof gameData === "string") return gameData;
+    const { game_id, category_id, category } = gameData;
     info_object.game_id = game_id;
     info_object.category_id = category_id;
     info_object.category = category;
@@ -27,15 +29,12 @@ const get_pb = async info_object => {
     } else {
         info_object.runner = info_object.split_msg[1];
         info_object.split_msg.splice(1, 1);
-        console.log("LOG: info_object.split_msg", info_object.split_msg);
-        // console.log("LOG: info_object.split_msg", info_object.split_msg);
     }
     const { game_id, category_id, category } = await tg.set_game_and_category(info_object);
     console.log("LOG: game_id, category_id, category", game_id, category_id, category);
     info_object.game_id = game_id;
     info_object.category_id = category_id;
     info_object.category = category;
-    // return "1";
 
     return pb.fetch_pb(info_object);
 };
@@ -102,7 +101,6 @@ const get_il_pb = async info_object => {
     console.log("run: ", run);
     const player_time = util.millisecondsToString(run.run.times.primary_t);
     return `${speedrunner.names.international}'s ${fuse_hit.category} PB is ${player_time}. Place: ${run.place}`;
-    console.log("run: ", run);
 };
 
 const new_cc = async info_object => {
@@ -198,6 +196,7 @@ const get_uptime = async info_object => {
 const get_title = async info_object => {
     let { channel, message } = info_object;
     const twitch_channel = await fetching.get_twitch_channel(channel);
+    console.log("LOG: twitch_channel", twitch_channel);
     if (twitch_channel.data.data.length === 0) return channel + " is not online.";
 
     return twitch_channel.data.data[0].title;
