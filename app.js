@@ -11,7 +11,7 @@ client.connect();
 
 client.on("connected", (address, port) => {
     console.log(`CONNECTED: ${address}:${port}`);
-    const adapter = new FileSync("./reserved-words.json");
+    const adapter = new FileSync("./database.json");
     const db = low(adapter);
     db.defaults({ games: [], users: [] }).write();
 });
