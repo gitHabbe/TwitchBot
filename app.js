@@ -79,128 +79,58 @@ client.on("chat", async (channel, userstate, message, self) => {
             client.say(channel, res);
             break;
         case "!hl":
-            commands
-                .set_highlight(info_object)
-                .then(res => {
-                    client.say(channel, res);
-                })
-                .catch(err => {
-                    console.log("HL err");
-                });
+            res = await commands.set_highlight(info_object);
+            client.say(channel, res);
             break;
         case "!hls":
-            commands
-                .get_highlights(info_object)
-                .then(res => {
-                    client.say(channel, res);
-                })
-                .catch(err => {
-                    console.log(err);
-                });
+            res = await commands.get_highlights(info_object);
+            client.say(channel, res);
             break;
         case "!gethl":
-            commands
-                .get_target_highlight(info_object)
-                .then(res => {
-                    client.say(channel, res);
-                })
-                .catch(err => {
-                    client.say(channel, "Cannot find highlight");
-                });
-            // console.log(target_highlight);
+            res = await commands.get_target_highlight(info_object);
+            client.say(channel, res);
             break;
         case "!dhl":
-            commands
-                .delete_highlight(info_object)
-                .then(res => {
-                    client.say(channel, res);
-                })
-                .catch(err => {
-                    console.log(err);
-                });
+            res = await commands.delete_highlight(info_object);
+            client.say(channel, res);
             break;
         case "!followage":
             res = await commands.get_followage(info_object);
             client.say(channel, res);
             break;
         case "!slots":
-            commands
-                .slots(info_object)
-                .then(res => {
-                    client.say(channel, res);
-                })
-                .catch(err => {
-                    console.log(err);
-                });
+            res = await commands.slots(info_object);
+            client.say(channel, res);
             break;
         case "!addperm":
-            commands
-                .add_permission(info_object)
-                .then(res => {
-                    client.say(channel, res);
-                })
-                .catch(err => {
-                    console.log(err);
-                });
+            res = await commands.add_permission(info_object);
+            client.say(channel, res);
             break;
         case "!getperm":
-            commands
-                .list_permission_string(info_object)
-                .then(res => {
-                    client.say(channel, res);
-                })
-                .catch(err => {
-                    console.log(err);
-                });
+            res = await commands.list_permission_string(info_object);
+            client.say(channel, res);
             break;
         case "!delperm":
-            commands
-                .remove_permission(info_object)
-                .then(res => {
-                    client.say(channel, res);
-                })
-                .catch(err => {
-                    console.log(err);
-                });
+            res = await commands.remove_permission(info_object);
+            client.say(channel, res);
             break;
         case "!time":
             // client.say(channel, "Doesnt work yet");
-            // commands.get_timezone(info_object)
-            // .then(res => { client.say(channel, res) }).catch(err => { console.log(err) })
             break;
         case "!connect":
         case "!join":
-            commands
-                .join_channel(info_object, client)
-                .then(res => {
-                    client.say(channel, res);
-                })
-                .catch(err => {
-                    console.log(err);
-                });
+            res = await commands.join_channel(info_object);
+            client.say(channel, res);
             break;
-
         case "!disconnect":
         case "!part":
         case "!leave":
-            commands
-                .leave_channel(info_object, client)
-                .then(res => {
-                    client.say(channel, res);
-                })
-                .catch(err => {
-                    console.log(err);
-                });
+            res = await commands.leave_channel(info_object);
+            client.say(channel, res);
             break;
         case "!help":
-            commands
-                .help_command(info_object)
-                .then(res => {
-                    client.say(channel, res);
-                })
-                .catch(err => {
-                    console.log(err);
-                });
+            res = await commands.help_command(info_object);
+            client.say(channel, res);
             break;
         default:
             // console.log('DEFAULT');
