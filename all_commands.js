@@ -541,34 +541,41 @@ const enable_component = async info_object => {
 };
 
 const disable_component = async info_object => {
-    let { channel, message, userstate, split_msg } = info_object;
-
+    let { channel, split_msg } = info_object;
     let component = split_msg[1];
     if (component.indexOf("!") >= 0) component = component.replace("!", "");
-    console.log("component: ", component);
 
     const adapter = new FileSync("./private/database.json");
     const db = low(adapter);
+    const userDB = db.get("users").find({ name: channel });
+    const isEnabled = userDB
+        .get("components")
+        .value()
+        .findIndex(comp => comp === component);
+    if (isEnabled === -1) return "!" + component + " already disabled.";
+    userDB
+        .get("components")
+        .remove(isEnabled.toString())
+        .write();
 
-    if (db.get(channel + ".user-settings." + component).value()) {
-        db.set(channel + ".user-settings." + component, false).write();
-        return "!" + component + " is now disabled.";
-    }
-    return "!" + component + " already disabled.";
+    return "!" + component + " has been disabled.";
 };
 
 const slots = async info_object => {
-    let { userstate } = info_object;
+    let { userstate, channel } = info_object;
 
     var emotes = ["Kappa", "Jebaited", "MingLee", "DansGame", "PogChamp", "Kreygasm"];
     var rolls = [];
 
-    // const adapter = new FileSync("./private/database.json");
-    // const db = low(adapter);
-
-    // if (db.get(channel + ".user-settings.slots").value() === false) {
-    //     return "Slots not enabled in this channel.";
-    // }
+    const adapter = new FileSync("./private/database.json");
+    const db = low(adapter);
+    const isEnabled = db
+        .get("users")
+        .find({ name: channel })
+        .get("components")
+        .value()
+        .find(comp => comp === "slots");
+    if (!isEnabled) return "!slots is not enabled";
 
     for (var i = 0; i < 3; i++) {
         var randomNr = Math.floor(Math.random() * emotes.length);
