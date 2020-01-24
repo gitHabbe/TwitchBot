@@ -11,6 +11,7 @@ client.connect();
 
 client.on("connected", (address, port) => {
     console.log(`CONNECTED: ${address}:${port}`);
+    db.defaults({ games: [], users: [] }).write();
 });
 
 // client.on("join", (channel, username, self) => {
