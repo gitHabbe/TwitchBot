@@ -520,19 +520,24 @@ const leave_channel = async (info_object, client) => {
 };
 
 const enable_component = async info_object => {
-    let { channel, message, userstate, split_msg } = info_object;
-
+    let { channel, split_msg } = info_object;
     let component = split_msg[1];
     if (component.indexOf("!") >= 0) component = component.replace("!", "");
-    console.log("component: ", component);
+
     const adapter = new FileSync("./private/database.json");
     const db = low(adapter);
+    const userDB = db.get("users").find({ name: channel });
+    const isEnabled = userDB
+        .get("components")
+        .value()
+        .find(comp => comp === component);
+    if (isEnabled) return "!" + component + " already enabled.";
+    userDB
+        .get("components")
+        .push(component)
+        .write();
 
-    if (!db.get(channel + ".user-settings." + component).value()) {
-        db.set(channel + ".user-settings." + component, true).write();
-        return "!" + component + " is now enabled.";
-    }
-    return "!" + component + " already enabled.";
+    return "!" + component + " has been enabled.";
 };
 
 const disable_component = async info_object => {
