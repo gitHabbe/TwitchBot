@@ -110,8 +110,6 @@ const get_category = async info_object => {
         category_id: fuse_hit.id,
         game_id: id,
         category: fuse_hit.name
-        // category_id: fuse_hit.category_id
-        // speedrun_game: speedrun_game
     };
 };
 
