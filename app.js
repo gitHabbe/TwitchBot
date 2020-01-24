@@ -128,7 +128,7 @@ client.on("chat", async (channel, userstate, message, self) => {
         case "!disconnect":
         case "!part":
         case "!leave":
-            res = await commands.leave_channel(info_object);
+            res = await commands.leave_channel(info_object, client);
             client.say(channel, res);
             break;
         case "!help":
