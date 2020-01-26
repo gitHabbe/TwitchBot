@@ -34,6 +34,8 @@ const get_game_id = async info_object => {
             abbrev: is_gameDB.abbrev
         };
     } else {
+        channel = "tridenttail";
+        console.log("LOG: channel", channel);
         const twitch_channel = await fetching.get_twitch_channel(channel);
         const twitch_game = await fetching.get_twitch_game(twitch_channel.data.data[0].game_id);
         const speedrun_game = await fetching.get_speedrungame_by_name(twitch_game.data.data[0].name);
@@ -81,12 +83,14 @@ const get_category = async info_object => {
                 .write();
         });
     }
-    let fuse_hit, category_list;
+    let fuse_hit;
+    let category_list = categoriesDB;
     if (msg_category) {
-        category_list = categoriesDB;
         msg_category = split_msg.slice(2).join(" ");
         fuse_hit = fuse.get_fuse_result(category_list, msg_category);
     } else {
+        channel = "tridenttail";
+        category_list = categoriesDB;
         const twitch_channel = await fetching.get_twitch_channel(channel);
         fuse_hit = fuse.get_fuse_result(category_list, twitch_channel.data.data[0].title);
     }
