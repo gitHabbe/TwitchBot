@@ -28,15 +28,15 @@ const get_pb = async info_object => {
         const adapter = new FileSync("./private/database.json");
         const db = low(adapter);
         const userDB = db.get("users").find({ name: channel });
+        info_object.runner = channel;
         if (userDB.has("settings.srcName").value()) {
             info_object.runner = userDB.get("settings.srcName").value();
-        } else {
-            info_object.runner = channel;
         }
     } else {
         info_object.runner = info_object.split_msg[1];
         info_object.split_msg.splice(1, 1);
     }
+    console.log("LOG: info_object.runner", info_object.runner);
     const { game_id, category_id, category } = await tg.set_game_and_category(info_object);
     console.log("LOG: game_id, category_id, category", game_id, category_id, category);
     info_object.game_id = game_id;
@@ -662,22 +662,13 @@ const set_username = async info_object => {
     const adapter = new FileSync("./private/database.json");
     const db = low(adapter);
     const userDB = db.get("users").find({ name: channel });
-    const isSet = userDB.find("settings.srcName").value();
     if (!newSrcName) {
         userDB.unset("settings.srcName").write();
-        return "Speedrun.com username set to: " + channel;
+        return "Speedrun . com username set to: " + channel;
     }
-    if (isSet) {
-        userDB.set("settings.srcName", newSrcName).write();
-        return "Speedrun.com username set to: " + newSrcName;
-    }
+    userDB.set("settings.srcName", newSrcName).write();
 
-    userDB
-        .get("settings")
-        .push({ srcName: newSrcName })
-        .write();
-
-    return "Speedrun.com username set to: " + newSrcName;
+    return "Speedrun . com username set to:: " + newSrcName;
 };
 
 module.exports = {
