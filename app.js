@@ -135,12 +135,15 @@ client.on("chat", async (channel, userstate, message, self) => {
             res = await commands.help_command(info_object);
             client.say(channel, res);
             break;
+        case "!setspeedrunner":
+            res = await commands.set_username(info_object);
+            client.say(channel, res);
+            break;
         default:
             // console.log('DEFAULT');
             break;
     }
     if (split_msg[0].startsWith("!")) {
-        console.log("INSIDE");
         const adapter = new FileSync("./reserved-words.json");
         const db = low(adapter);
         const is_reserved = db
@@ -156,7 +159,6 @@ client.on("chat", async (channel, userstate, message, self) => {
             .catch(err => {
                 console.log(err);
             });
-        console.log("AFTER IF");
     }
     if (message.indexOf("https://www.youtube.com") > -1) {
         commands

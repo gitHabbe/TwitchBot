@@ -25,7 +25,14 @@ const get_wr = async info_object => {
 const get_pb = async info_object => {
     let { channel, split_msg } = info_object;
     if (split_msg.length === 1) {
-        info_object.runner = channel;
+        const adapter = new FileSync("./private/database.json");
+        const db = low(adapter);
+        const userDB = db.get("users").find({ name: channel });
+        if (userDB.has("settings.srcName").value()) {
+            info_object.runner = userDB.get("settings.srcName").value();
+        } else {
+            info_object.runner = channel;
+        }
     } else {
         info_object.runner = info_object.split_msg[1];
         info_object.split_msg.splice(1, 1);
@@ -593,7 +600,7 @@ const slots = async info_object => {
 };
 
 const help_command = async info_object => {
-    let { channel, message, userstate, split_msg } = info_object;
+    let { split_msg } = info_object;
 
     if (!split_msg[1]) {
         return (
@@ -648,6 +655,31 @@ const help_command = async info_object => {
     }
 };
 
+const set_username = async info_object => {
+    let { channel, userstate, split_msg } = info_object;
+    if (userstate.username !== channel) return "Only streamer can change username";
+    const newSrcName = split_msg.length > 1 && split_msg[1];
+    const adapter = new FileSync("./private/database.json");
+    const db = low(adapter);
+    const userDB = db.get("users").find({ name: channel });
+    const isSet = userDB.find("settings.srcName").value();
+    if (!newSrcName) {
+        userDB.unset("settings.srcName").write();
+        return "Speedrun.com username set to: " + channel;
+    }
+    if (isSet) {
+        userDB.set("settings.srcName", newSrcName).write();
+        return "Speedrun.com username set to: " + newSrcName;
+    }
+
+    userDB
+        .get("settings")
+        .push({ srcName: newSrcName })
+        .write();
+
+    return "Speedrun.com username set to: " + newSrcName;
+};
+
 module.exports = {
     get_wr,
     get_pb,
@@ -675,5 +707,6 @@ module.exports = {
     enable_component,
     disable_component,
     slots,
-    help_command
+    help_command,
+    set_username
 };

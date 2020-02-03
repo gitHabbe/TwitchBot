@@ -89,7 +89,7 @@ const get_category = async info_object => {
         msg_category = split_msg.slice(2).join(" ");
         fuse_hit = fuse.get_fuse_result(category_list, msg_category);
     } else {
-        channel = "tridenttail";
+        // channel = "tridenttail";
         category_list = categoriesDB;
         const twitch_channel = await fetching.get_twitch_channel(channel);
         fuse_hit = fuse.get_fuse_result(category_list, twitch_channel.data.data[0].title);
