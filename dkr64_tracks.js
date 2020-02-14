@@ -1,0 +1,22 @@
+module.exports = [
+    "ancient-lake",
+    "fossil-canyon",
+    "jungle-falls",
+    "hot-top-volcano",
+    "whale-bay",
+    "pirate-lagoon",
+    "crescent-island",
+    "treasure-caves",
+    "everfrost-peak",
+    "walrus-cove",
+    "snowball-valley",
+    "frosty-village",
+    "boulder-canyon",
+    "greenwood-village",
+    "windmill-plains",
+    "haunted-woods",
+    "spacedust-alley",
+    "darkmoon-caverns",
+    "star-city",
+    "spaceport-alpha"
+];

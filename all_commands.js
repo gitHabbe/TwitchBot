@@ -76,7 +76,6 @@ ${days_ago} days ago`;
 };
 
 const get_tt_wr = async info_object => {
-    // !ttwr [dkr] [trackname] [vehicle] [?laps] [?shortcut]
     let { split_msg } = info_object;
     let [cmd, track_msg, vehicle_msg, laps = 3, shortcut = false] = split_msg;
     if (!track_msg) return "No track specified.";
@@ -114,11 +113,9 @@ const get_tt_wr = async info_object => {
 
 const get_il_pb = async info_object => {
     let { split_msg } = info_object;
-    // !ilpb [dkr] [track name] [vehicle]
     runner_msg = split_msg[1];
     info_object.split_msg.splice(1, 1);
     let speedrunner_list = await fetching.get_speedrunner(runner_msg);
-    // console.log('speedrunner_list.data: ', speedrunner_list.data);
     speedrunner = speedrunner_list.data.data.find(
         runner => runner.names.international.toLowerCase() === runner_msg.toLowerCase()
     );
@@ -154,7 +151,6 @@ const get_tt_pb = async info_object => {
         return `${laps} is not a valid laps count.`;
     }
     laps = parseInt(laps);
-    console.log("LOG: laps", laps);
     if (laps === 1 || laps === 3) {
         // PLACEHOLDER
     } else {
@@ -179,7 +175,7 @@ const get_tt_pb = async info_object => {
     if (!isRunner) return `No run for ${runner} was found on ${prettyTrack} (${vehicle_msg})`;
     const times = util.secondsToString3(isRunner.time_value);
 
-    return isRunner.username + "'s " + prettyTrack + ": " + times;
+    return isRunner.username + "'s " + prettyTrack + ": " + times + " - Rank: " + isRunner.ranking;
 };
 
 const new_cc = async info_object => {
