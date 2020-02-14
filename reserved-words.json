@@ -28,6 +28,8 @@
         "!disconnect",
         "!part",
         "!leave",
-        "!help"
+        "!help",
+        "!ttwr",
+        "!ttpb"
     ]
 }

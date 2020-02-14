@@ -10,6 +10,7 @@ const util = require("./tools/util.js");
 const tg = require("./tools/title_category.js");
 const wr = require("./tools/fetch_wr.js");
 const pb = require("./tools/fetch_pb.js");
+const dkr64_tracks = require("./dkr64_tracks");
 
 const get_wr = async info_object => {
     const gameData = await tg.set_game_and_category(info_object);
@@ -74,9 +75,35 @@ by ${speedrunner.data.data.names.international} \
 ${days_ago} days ago`;
 };
 
+const get_tt_wr = async info_object => {
+    // !ttwr [dkr] [trackname] [vehicle] [?laps] [?shortcut]
+    let { split_msg } = info_object;
+    let [cmd, game_msg, track_msg, vehicle_msg, laps = 3, shortcut = false] = split_msg;
+    laps = parseInt(laps);
+    console.log("LOG: laps", laps);
+    if (laps === 1 || laps === 3) {
+        // PLACEHOLDER
+    } else {
+        return "Invalid laps count: " + laps;
+    }
+    // if (laps !== 1 || laps !== 3) return "Invalid laps count: " + laps;
+    if (shortcut === "shortcut") shortcut = true;
+    const game = await tg.get_game_id(info_object);
+    if (typeof game === "string") return "Game " + split_msg[1] + " does not exist.";
+    const arrNum = fuse.get_fuse_result2(dkr64_tracks, track_msg);
+    const fuseTrack = dkr64_tracks[arrNum];
+    const track = await fetching.get_dkr64_track(fuseTrack, vehicle_msg, laps, 1, false);
+    if (track.data.status !== 1 || track.data.error !== "") return "There was a problem.";
+    // console.log("LOG: track", track);
+    const asdf = util.secondsToString3(track.data.times[0].time_value);
+    console.log("LOG: asdf", asdf);
+
+    return track.data.times[0].username + " with a time of: " + track.data.times[0].time_value;
+};
+
 const get_il_pb = async info_object => {
     let { split_msg } = info_object;
-
+    // !ilpb [dkr] [track name] [vehicle]
     runner_msg = split_msg[1];
     info_object.split_msg.splice(1, 1);
     let speedrunner_list = await fetching.get_speedrunner(runner_msg);
@@ -699,5 +726,6 @@ module.exports = {
     disable_component,
     slots,
     help_command,
-    set_username
+    set_username,
+    get_tt_wr
 };

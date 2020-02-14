@@ -54,6 +54,14 @@ client.on("chat", async (channel, userstate, message, self) => {
             res = await commands.get_il_pb(info_object);
             client.say(channel, res);
             break;
+        case "!ttwr":
+            res = await commands.get_tt_wr(info_object);
+            client.say(channel, res);
+            break;
+        case "!ttpb":
+            res = await commands.get_dkr_track(info_object);
+            client.say(channel, res);
+            break;
         case "!enable":
             res = await commands.enable_component(info_object);
             client.say(channel, res);

@@ -1,81 +1,83 @@
 function secondsToString(seconds) {
-    let str = '';
+    let str = "";
     let days = Math.floor((seconds % 31536000) / 86400);
-    if (days > 0) str += days + 'd '
+    if (days > 0) str += days + "d ";
     let hours = Math.floor(((seconds % 31536000) % 86400) / 3600);
-    if (hours > 0) str += hours + 'h '
+    if (hours > 0) str += hours + "h ";
     let mins = Math.floor((((seconds % 31536000) % 86400) % 3600) / 60);
-    if (mins > 0) str += mins + 'm '
+    if (mins > 0) str += mins + "m ";
     let secs = Math.floor((((seconds % 31536000) % 86400) % 3600) % 60);
-    if (secs > 0) str += secs + 's'
-    return str.trim()
+    if (secs > 0) str += secs + "s";
+    return str.trim();
 }
 
 function secondsToString2(seconds) {
-    let str = ''
+    let str = "";
     let days = Math.floor((seconds % 31536000) / 86400);
-    if (days > 0) str += days + 'd '
+    if (days > 0) str += days + "d ";
     let hours = Math.floor(((seconds % 31536000) % 86400) / 3600);
     if (hours > 0) {
         if (hours < 10) {
-            str += '0' + hours + ':'
+            str += "0" + hours + ":";
         } else {
-            str += hours + ':'
+            str += hours + ":";
         }
     }
     let mins = Math.floor((((seconds % 31536000) % 86400) % 3600) / 60);
     if (mins > 0) {
         if (mins < 10) {
-            str += '0' + mins + ':'
+            str += "0" + mins + ":";
         } else {
-            str += mins + ':'
+            str += mins + ":";
         }
     }
     let secs = Math.floor((((seconds % 31536000) % 86400) % 3600) % 60);
     if (secs > 0) {
         if (hours < 0 && minutes < 0) {
-            str += secs + 's'
-        }
-        else if (secs < 10) {
-            str += '0' + secs
-        }
-        else {
-            str += secs + ''
+            str += secs + "s";
+        } else if (secs < 10) {
+            str += "0" + secs;
+        } else {
+            str += secs + "";
         }
     }
-    return str.trim()
+    return str.trim();
 }
 
 function millisecondsToString(time) {
-    let str = '';
+    let str = "";
     let hours = Math.floor(((time % 31536000) % 86400) % 3600);
     let mins = Math.floor((((time % 31536000) % 86400) % 3600) / 60);
     if (mins > 0) {
         if (mins < 10) {
-            str += '0' + mins + ':'
+            str += "0" + mins + ":";
         } else {
-            str += mins + ':'
+            str += mins + ":";
         }
     }
     let secs = Math.floor((((time % 31536000) % 86400) % 3600) % 60);
     if (secs > 0) {
         if (secs < 10) {
-            str += '0' + secs
-        }
-        else {
-            str += secs
+            str += "0" + secs;
+        } else {
+            str += secs;
         }
     }
-    
-    let milli = String(time).split('.');
-    return str + '.' + milli[1]
+
+    let milli = String(time).split(".");
+    return str + "." + milli[1];
 }
+
+const secondsToString3 = times => {
+    let mins = Math.floor((((time % 31536000) % 86400) % 3600) / 60);
+    console.log("LOG: mins", mins);
+};
 
 const get_game_link = (object, rel_name) => {
     // return object.links.find(link => link.rel === rel_name).uri;
     return object.links.find(link => {
         // console.log(link.rel);
-        return link.rel === rel_name
+        return link.rel === rel_name;
     }).uri;
 };
 
@@ -83,10 +85,10 @@ const get_correct_category = (category_list, title) => {
     // console.log('TITLE: ' + title.toLowerCase());
     let found_category = category_list.find(category => {
         // console.log('CATEGORY: ' + category.name.toLowerCase());
-        return title.toLowerCase().includes(category.name.toLowerCase())
-    })
+        return title.toLowerCase().includes(category.name.toLowerCase());
+    });
     // console.log(found_category);
-    return { uri: get_game_link(found_category, 'leaderboard'), name: found_category.name }
+    return { uri: get_game_link(found_category, "leaderboard"), name: found_category.name };
 };
 
 module.exports = {
@@ -94,5 +96,6 @@ module.exports = {
     get_correct_category: get_correct_category,
     secondsToString: secondsToString,
     secondsToString2: secondsToString2,
-    millisecondsToString: millisecondsToString
-}
+    millisecondsToString: millisecondsToString,
+    secondsToString3
+};
