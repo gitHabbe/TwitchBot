@@ -68,9 +68,24 @@ function millisecondsToString(time) {
     return str + "." + milli[1];
 }
 
-const secondsToString3 = times => {
+const secondsToString3 = time => {
+    let str = "";
     let mins = Math.floor((((time % 31536000) % 86400) % 3600) / 60);
-    console.log("LOG: mins", mins);
+    if (mins > 0) {
+        str += mins + ":";
+    }
+    let secs = Math.floor((((time % 31536000) % 86400) % 3600) % 60);
+    if (secs > 0) {
+        if (secs < 10) {
+            str += "0" + secs;
+        } else {
+            str += secs;
+        }
+    }
+    let hundreth = time.toString().split(".")[1];
+    str += "." + hundreth;
+
+    return str;
 };
 
 const get_game_link = (object, rel_name) => {

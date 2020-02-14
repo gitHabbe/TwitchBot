@@ -59,7 +59,7 @@ client.on("chat", async (channel, userstate, message, self) => {
             client.say(channel, res);
             break;
         case "!ttpb":
-            res = await commands.get_dkr_track(info_object);
+            res = await commands.get_tt_pb(info_object);
             client.say(channel, res);
             break;
         case "!enable":

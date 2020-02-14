@@ -51,25 +51,16 @@ const get_speedrungame_by_id = game_id => {
     return axios.get(encodeURI(`https://www.speedrun.com/api/v1/games/${game_id}`));
 };
 
-const get_dkr64_track = (track, vehicle, laps, limit, shortcut = false) => {
+const get_dkr64_track = (track, vehicle, laps, limit, shortcut = false, user = false) => {
     let url = `https://www.dkr64.com/api/times?api_token=${process.env.DKR64_API_TOKEN}`;
-    url += `&track=${track}&vehicle=${vehicle}&laps=${laps}&limit=${limit}`;
+    url += `&track=${track}&vehicle=${vehicle}&laps=${laps}`;
+    if (user) url += `&user=${user}`;
+    else url += `&limit=${limit}`;
     if (shortcut) url += `&type=shortcut`;
     else url += `&type=standard`;
 
     return axios.get(url);
-
-    // if (shortcut) {
-    //         return axios.get(`https://www.dkr64.com/api/times?api_token=${process.env.DKR64_API_TOKEN}&track=${track}&vehicle=${vehicle}&type=shortcut&laps=${laps}&limit=${limit}`);
-    //     }
-    //     return axios.get(`https://www.dkr64.com/api/times?api_token=${process.env.DKR64_API_TOKEN}&track=${track}&vehicle=${vehicle}&type=standard&laps=${laps}&limit=${limit}`);
 };
-// async function fetch_dkr64_track_wr(track, vehicle, laps, limit, shortcut = false) {
-//     if (shortcut) {
-//         return axios.get(`https://www.dkr64.com/api/times?api_token=${process.env.DKR64_API_TOKEN}&track=${track}&vehicle=${vehicle}&type=shortcut&laps=${laps}&limit=${limit}`);
-//     }
-//     return axios.get(`https://www.dkr64.com/api/times?api_token=${process.env.DKR64_API_TOKEN}&track=${track}&vehicle=${vehicle}&type=standard&laps=${laps}&limit=${limit}`);
-// }
 
 module.exports = {
     fetch_speedrun_uri,

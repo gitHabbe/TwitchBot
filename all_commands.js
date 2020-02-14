@@ -78,7 +78,12 @@ ${days_ago} days ago`;
 const get_tt_wr = async info_object => {
     // !ttwr [dkr] [trackname] [vehicle] [?laps] [?shortcut]
     let { split_msg } = info_object;
-    let [cmd, game_msg, track_msg, vehicle_msg, laps = 3, shortcut = false] = split_msg;
+    let [cmd, track_msg, vehicle_msg, laps = 3, shortcut = false] = split_msg;
+    if (!track_msg) return "No track specified.";
+    if (!vehicle_msg) return "No vehicle specified.";
+    if (!parseInt(laps)) {
+        return `${laps} is not a valid laps count.`;
+    }
     laps = parseInt(laps);
     console.log("LOG: laps", laps);
     if (laps === 1 || laps === 3) {
@@ -86,19 +91,25 @@ const get_tt_wr = async info_object => {
     } else {
         return "Invalid laps count: " + laps;
     }
-    // if (laps !== 1 || laps !== 3) return "Invalid laps count: " + laps;
-    if (shortcut === "shortcut") shortcut = true;
-    const game = await tg.get_game_id(info_object);
-    if (typeof game === "string") return "Game " + split_msg[1] + " does not exist.";
+    if (shortcut === "shortcut") {
+        shortcut = true;
+    } else {
+        shortcut = false;
+    }
     const arrNum = fuse.get_fuse_result2(dkr64_tracks, track_msg);
     const fuseTrack = dkr64_tracks[arrNum];
-    const track = await fetching.get_dkr64_track(fuseTrack, vehicle_msg, laps, 1, false);
-    if (track.data.status !== 1 || track.data.error !== "") return "There was a problem.";
-    // console.log("LOG: track", track);
-    const asdf = util.secondsToString3(track.data.times[0].time_value);
-    console.log("LOG: asdf", asdf);
+    const track = await fetching.get_dkr64_track(fuseTrack, vehicle_msg, laps, 1, shortcut);
+    const prettyTrack = dkr64_tracks[arrNum].split("-").join(" ");
+    console.log("LOG: fuseTrack, vehicle_msg, laps, 1, shortcut", fuseTrack, vehicle_msg, laps, 1, shortcut);
+    if (track.data.error === "Invalid field value: 'vehicle'") {
+        return `${vehicle_msg} is not a valid vehicle`;
+    }
+    if (track.data.times.length === 0) {
+        return `${prettyTrack} and ${vehicle_msg} is not a valid combination.`;
+    }
+    const times = util.secondsToString3(track.data.times[0].time_value);
 
-    return track.data.times[0].username + " with a time of: " + track.data.times[0].time_value;
+    return track.data.times[0].username + "'s " + prettyTrack + ": " + times;
 };
 
 const get_il_pb = async info_object => {
@@ -132,6 +143,43 @@ const get_il_pb = async info_object => {
     });
     const player_time = util.millisecondsToString(run.run.times.primary_t);
     return `${speedrunner.names.international}'s ${fuse_hit.category} PB is ${player_time}. Place: ${run.place}`;
+};
+
+const get_tt_pb = async info_object => {
+    let { split_msg } = info_object;
+    let [cmd, runner, track_msg, vehicle_msg, laps = 3, shortcut = false] = split_msg;
+    if (!track_msg) return "No track specified.";
+    if (!vehicle_msg) return "No vehicle specified.";
+    if (!parseInt(laps)) {
+        return `${laps} is not a valid laps count.`;
+    }
+    laps = parseInt(laps);
+    console.log("LOG: laps", laps);
+    if (laps === 1 || laps === 3) {
+        // PLACEHOLDER
+    } else {
+        return "Invalid laps count: " + laps;
+    }
+    if (shortcut === "shortcut") {
+        shortcut = true;
+    } else {
+        shortcut = false;
+    }
+    const arrNum = fuse.get_fuse_result2(dkr64_tracks, track_msg);
+    const fuseTrack = dkr64_tracks[arrNum];
+    const track = await fetching.get_dkr64_track(fuseTrack, vehicle_msg, laps, 1, shortcut, runner);
+    const prettyTrack = dkr64_tracks[arrNum].split("-").join(" ");
+    if (track.data.error === "Invalid field value: 'vehicle'") {
+        return `${vehicle_msg} is not a valid vehicle`;
+    }
+    if (track.data.times.length === 0) {
+        return `${prettyTrack} and ${vehicle_msg} is not a valid combination.`;
+    }
+    const isRunner = track.data.times.find(run => run.username.toLowerCase() === runner.toLowerCase());
+    if (!isRunner) return `No run for ${runner} was found on ${prettyTrack} (${vehicle_msg})`;
+    const times = util.secondsToString3(isRunner.time_value);
+
+    return isRunner.username + "'s " + prettyTrack + ": " + times;
 };
 
 const new_cc = async info_object => {
@@ -727,5 +775,6 @@ module.exports = {
     slots,
     help_command,
     set_username,
-    get_tt_wr
+    get_tt_wr,
+    get_tt_pb
 };
