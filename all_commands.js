@@ -48,17 +48,14 @@ const get_pb = async info_object => {
 };
 
 const get_il_wr = async info_object => {
-    let { split_msg } = info_object;
     info_object.split_msg.shift();
     info_object.split_msg = ["!ilwr", "dkr", ...info_object.split_msg];
-    console.log("LOG: info_object.split_msg", info_object.split_msg);
+    let { split_msg } = info_object;
     const game = await tg.get_game_id(info_object);
     if (typeof game === "string") return "Game " + split_msg[1] + " does not exist.";
     const level_list = await fetching.fetch_game_levels(game.id);
-    console.log("LOG: level_list", level_list.data.data);
     const level_list_names = level_list.data.data.map((level, index) => {
         let level_name = level.name;
-        // console.log(level_name)
         if (level_name.indexOf("(") > -1) {
             level_name = level_name.replace("(", "");
             level_name = level_name.replace(")", "");
@@ -66,8 +63,7 @@ const get_il_wr = async info_object => {
         const lb_uri = level.links.find(link => link.rel === "leaderboard");
         return { category: level_name, lb_uri: lb_uri.uri, index: index, name: level_name };
     });
-    // console.log('level_list_names: ', level_list_names);
-    const fuse_hit = fuse.get_fuse_result(level_list_names, split_msg.slice(1).join(" "));
+    const fuse_hit = fuse.get_fuse_result(level_list_names, split_msg.slice(2).join(" "));
     const level_lb = await fetching.fetch_speedrun_uri(fuse_hit.lb_uri + "?top=1");
     const wr_time = util.millisecondsToString(level_lb.data.data.runs[0].run.times.primary_t);
     const speedrunner = await fetching.fetch_speedrun_uri(level_lb.data.data.runs[0].run.players[0].uri);
@@ -716,14 +712,14 @@ const help_command = async info_object => {
                 "Leave [game] empty to get game from current game being played."
             );
         case "ilwr":
-            return "Use !ilwr [game] [level] [vehicle] to get world record time. Currently only works for Diddy Kong Racing.";
+            return "Use !ilwr [level] [vehicle] to get world record time. Currently only works for Diddy Kong Racing.";
         case "pb":
             return (
                 "Use !pb [player-name] [game] [category] to get personal best time. Leave [category] empty to get category from title. " +
                 "Leave [game] empty to get game from current game being played."
             );
         case "ilpb":
-            return "Use !ilpb [player] [game] [level] [vehicle] to get personal best time. Currently only works for Diddy Kong Racing.";
+            return "Use !ilpb [player] [level] [vehicle] to get personal best time. Currently only works for Diddy Kong Racing.";
         case "leave":
             return "Make me leave your channel. !part also works.";
         default:
