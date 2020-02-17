@@ -90,18 +90,22 @@ client.on("chat", async (channel, userstate, message, self) => {
             client.say(channel, res);
             break;
         case "!hl":
+        case "!ts":
             res = await commands.set_highlight(info_object);
             client.say(channel, res);
             break;
         case "!hls":
+        case "!allts":
             res = await commands.get_highlights(info_object);
             client.say(channel, res);
             break;
         case "!gethl":
+        case "!getts":
             res = await commands.get_target_highlight(info_object);
             client.say(channel, res);
             break;
         case "!dhl":
+        case "!dts":
             res = await commands.delete_highlight(info_object);
             client.say(channel, res);
             break;

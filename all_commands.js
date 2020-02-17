@@ -290,7 +290,7 @@ const set_highlight = async info_object => {
         .find({ name: channel })
         .get("highlights");
     const is_taken = userDB.find({ hl_name: message.slice(4) }).value();
-    if (is_taken) return "Highlight-name already exists.";
+    if (is_taken) return "Timestamp-name already exists.";
     // channel = "lezonta";
     const twitch_channel = await fetching.get_twitch_channel(channel);
     const user_video_list = await fetching.get_twitch_videos(twitch_channel.data.data[0].user_id);
@@ -310,11 +310,11 @@ const set_highlight = async info_object => {
         })
         .write();
 
-    return `Highlight created: ${message.slice(4)}`;
+    return `Timestamp created: ${message.slice(4)}`;
 };
 
 const get_highlights = async info_object => {
-    let { channel, message, userstate } = info_object;
+    let { channel } = info_object;
     const permission = await is_permissioned(info_object);
     if (!permission) return "Permission denied";
     const adapter = new FileSync("./private/database.json");
@@ -325,9 +325,9 @@ const get_highlights = async info_object => {
         .get("highlights")
         .value();
 
-    if (hl_list.length === 0) return "No highlights created.";
+    if (hl_list.length === 0) return "No timestamps created.";
 
-    return hl_list.map(hl => hl.hl_name).join(", ");
+    return "Timestamps: " + hl_list.map(hl => hl.hl_name).join(", ");
 };
 
 const get_target_highlight = async info_object => {
@@ -341,11 +341,11 @@ const get_target_highlight = async info_object => {
         .get("highlights")
         .value();
     const highlight_hit = hl_list.find(hl => hl.hl_name === target_highlight);
-    if (!highlight_hit) return "Highlight not found.";
+    if (!highlight_hit) return "Timestamp not found.";
 
     const timestamp = util.secondsToString(highlight_hit.timestamp - 100).replace(/\s/g, "");
 
-    return highlight_hit.hl_name + ", " + highlight_hit.hl_url + "?t=" + timestamp;
+    return `${highlight_hit.hl_name}, ${highlight_hit.hl_url}?t=${timestamp}`;
 };
 
 const delete_highlight = async info_object => {
@@ -356,22 +356,18 @@ const delete_highlight = async info_object => {
     const target_highlight = message.slice(5);
     const adapter = new FileSync("./private/database.json");
     const db = low(adapter);
-    const hl_list = db
-        .get("users")
-        .find({ name: channel })
-        .get("highlights");
+    const userDB = db.get("users").find({ name: channel });
+    const hl_list = userDB.get("highlights");
 
     console.log("LOG: target_highlight", target_highlight);
     if (target_highlight === "all") {
-        db.get("users")
-            .find({ name: channel })
-            .set("highlights", [])
-            .write();
-        return "All highlights deleted.";
+        userDB.set("highlights", []).write();
+        return "All timestamps deleted.";
     }
     const target_hl = hl_list.find({ hl_name: target_highlight }).value();
-    if (!target_hl) return "Highlight not found.";
+    if (!target_hl) return "Timestamp not found.";
     hl_list.remove({ hl_name: target_highlight }).write();
+
     return target_highlight + " deleted.";
 };
 
@@ -686,23 +682,23 @@ const help_command = async info_object => {
     split_msg[1] = split_msg[1].replace(/!/g, "");
     switch (split_msg[1]) {
         case "enable":
-            return "Use !enable [component] to enable a component.";
+            return "Use !enable [component] to enable a component. Available components: slots.";
         case "disable":
             return "Use !disable [component] to disable a component.";
         case "newcmd":
             return "Use !newcmd [command-name] [command-text] to create a custom command. (!addcmd also works)";
         case "delcmd":
             return "Use !delcmd [command-name] to delete a custom command. !deletecmd and !removecmd also works.";
-        case "hl":
-            return "Use !hl [highlight-name] to create a highlight timestamp.";
-        case "hls":
-            return "Use !hls to list all your highlight-names.";
-        case "dhl":
-            return "Use !dhl [highlight-name] to delete a highlight.";
+        case "ts":
+            return "Use !ts [timestamp-name] to create a timestamp.";
+        case "allts":
+            return "Use !allts to list all your timestamp-names.";
+        case "dts":
+            return "Use !dts [timestamp-name] to delete a timestamp.";
         case "addperm":
-            return "Use !addperm [name] to give a person permission to manage highlights/customcommands/permissions.";
+            return "Use !addperm [name] to give a person permission to manage timestamp/customcommands/permissions.";
         case "delperm":
-            return "Use !delperm [name] to remove a person's permission to manage highlights/customcommands/permissions.";
+            return "Use !delperm [name] to remove a person's permission to manage timestamp/customcommands/permissions.";
         case "getperm":
             return "Use !getperm to list all people with extra permission.";
         case "title":

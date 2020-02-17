@@ -4,6 +4,8 @@
         "!pb",
         "!ilwr",
         "!ilpb",
+        "!ttwr",
+        "!ttpb",
         "!enable",
         "!disable",
         "!addcmd",
@@ -14,9 +16,14 @@
         "!uptime",
         "!title",
         "!hl",
+        "!ts",
         "!hls",
+        "!allts",
         "!gethl",
+        "!getts",
         "!dhl",
+        "!dts",
+        "!deletets",
         "!followage",
         "!slots",
         "!addperm",
@@ -29,8 +36,6 @@
         "!part",
         "!leave",
         "!help",
-        "!ttwr",
-        "!ttpb",
         "!setspeedrunner"
     ]
 }
