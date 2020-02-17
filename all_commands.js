@@ -179,7 +179,7 @@ const get_tt_pb = async info_object => {
 };
 
 const new_cc = async info_object => {
-    let { channel, message, userstate, split_msg } = info_object;
+    let { channel, userstate, split_msg } = info_object;
     const permission = await is_permissioned(info_object);
     if (!permission) return "Permission denied";
     if (!split_msg[1]) return "No command-name specified.";
@@ -278,21 +278,23 @@ const get_title = async info_object => {
 };
 
 const set_highlight = async info_object => {
-    let { channel, message, userstate, split_msg } = info_object;
+    let { channel, userstate, split_msg } = info_object;
     const permission = await is_permissioned(info_object);
     if (!permission) return "Permission denied";
-    if (message.slice(4).toLowerCase() === "all") return '"all" is a reserved name.';
-
+    if (split_msg[1].toLowerCase() === "all") return '"all" is a reserved name.';
+    const ts_name = split_msg.slice(1).join(" ");
     const adapter = new FileSync("./private/database.json");
     const db = low(adapter);
     const userDB = db
         .get("users")
         .find({ name: channel })
         .get("highlights");
-    const is_taken = userDB.find({ hl_name: message.slice(4) }).value();
+    const is_taken = userDB.find({ hl_name: ts_name }).value();
     if (is_taken) return "Timestamp-name already exists.";
-    // channel = "lezonta";
     const twitch_channel = await fetching.get_twitch_channel(channel);
+    if (twitch_channel.data.data.length === 0) {
+        return "Can't create timestamp if channel is offline.";
+    }
     const user_video_list = await fetching.get_twitch_videos(twitch_channel.data.data[0].user_id);
     const highlight_id = user_video_list.data.data[0].id;
     const highlight_url = user_video_list.data.data[0].url;
@@ -301,7 +303,7 @@ const set_highlight = async info_object => {
 
     userDB
         .push({
-            hl_name: message.slice(4),
+            hl_name: ts_name,
             hl_url: highlight_url,
             made_by: userstate.username,
             timestamp: seconds_ago,
@@ -310,7 +312,7 @@ const set_highlight = async info_object => {
         })
         .write();
 
-    return `Timestamp created: ${message.slice(4)}`;
+    return `Timestamp created: ${ts_name}`;
 };
 
 const get_highlights = async info_object => {
@@ -331,16 +333,16 @@ const get_highlights = async info_object => {
 };
 
 const get_target_highlight = async info_object => {
-    let { channel, message, userstate } = info_object;
+    let { split_msg, channel, message, userstate } = info_object;
     const adapter = new FileSync("./private/database.json");
     const db = low(adapter);
-    const target_highlight = message.slice(7);
+    const target_timestamp = split_msg.slice(1).join(" ");
     const hl_list = db
         .get("users")
         .find({ name: channel })
         .get("highlights")
         .value();
-    const highlight_hit = hl_list.find(hl => hl.hl_name === target_highlight);
+    const highlight_hit = hl_list.find(hl => hl.hl_name === target_timestamp);
     if (!highlight_hit) return "Timestamp not found.";
 
     const timestamp = util.secondsToString(highlight_hit.timestamp - 100).replace(/\s/g, "");
@@ -349,26 +351,26 @@ const get_target_highlight = async info_object => {
 };
 
 const delete_highlight = async info_object => {
-    let { channel, message } = info_object;
+    let { channel, split_msg } = info_object;
     const permission = await is_permissioned(info_object);
     if (!permission) return "Permission denied";
 
-    const target_highlight = message.slice(5);
+    const target_timestamp = split_msg.slice(1).join(" ");
     const adapter = new FileSync("./private/database.json");
     const db = low(adapter);
     const userDB = db.get("users").find({ name: channel });
     const hl_list = userDB.get("highlights");
 
-    console.log("LOG: target_highlight", target_highlight);
-    if (target_highlight === "all") {
+    console.log("LOG: target_timestamp", target_timestamp);
+    if (target_timestamp === "all") {
         userDB.set("highlights", []).write();
         return "All timestamps deleted.";
     }
-    const target_hl = hl_list.find({ hl_name: target_highlight }).value();
+    const target_hl = hl_list.find({ hl_name: target_timestamp }).value();
     if (!target_hl) return "Timestamp not found.";
-    hl_list.remove({ hl_name: target_highlight }).write();
+    hl_list.remove({ hl_name: target_timestamp }).write();
 
-    return target_highlight + " deleted.";
+    return target_timestamp + " deleted.";
 };
 
 const get_followage = async info_object => {
@@ -672,8 +674,8 @@ const help_command = async info_object => {
     if (!split_msg[1]) {
         return (
             'Use "!help command" on any of: ' +
-            "enable, disable, newcmd, delcmd, hl, hls, gethl, " +
-            "dhl, wr, pb, ilwr, ilpb, ttwr, ttpb, " +
+            "enable, disable, newcmd, delcmd, ts, grabts, allts, " +
+            "dts, wr, pb, ilwr, ilpb, ttwr, ttpb, " +
             "addperm, getperm, setspeedrunner, " +
             "title, uptime, leave"
         );
@@ -693,6 +695,8 @@ const help_command = async info_object => {
             return "Use !ts [timestamp-name] to create a timestamp.";
         case "allts":
             return "Use !allts to list all your timestamp-names.";
+        case "grabts":
+            return "Use !grabts [timestamp-name] to get timestamp data.";
         case "dts":
             return "Use !dts [timestamp-name] to delete a timestamp.";
         case "addperm":

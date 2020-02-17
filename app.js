@@ -40,117 +40,91 @@ client.on("chat", async (channel, userstate, message, self) => {
     switch (split_msg[0]) {
         case "!wr":
             res = await commands.get_wr(info_object);
-            client.say(channel, res);
-            break;
+            return client.say(channel, res);
         case "!pb":
             res = await commands.get_pb(info_object);
-            client.say(channel, res);
-            break;
+            return client.say(channel, res);
         case "!ilwr":
             res = await commands.get_il_wr(info_object);
-            client.say(channel, res);
-            break;
+            return client.say(channel, res);
         case "!ilpb":
             res = await commands.get_il_pb(info_object);
-            client.say(channel, res);
-            break;
+            return client.say(channel, res);
         case "!ttwr":
             res = await commands.get_tt_wr(info_object);
-            client.say(channel, res);
-            break;
+            return client.say(channel, res);
         case "!ttpb":
             res = await commands.get_tt_pb(info_object);
-            client.say(channel, res);
-            break;
+            return client.say(channel, res);
         case "!enable":
             res = await commands.enable_component(info_object);
-            client.say(channel, res);
-            break;
+            return client.say(channel, res);
         case "!disable":
             res = await commands.disable_component(info_object);
-            client.say(channel, res);
-            break;
+            return client.say(channel, res);
         case "!addcmd":
         case "!newcmd":
             res = await commands.new_cc(info_object);
-            client.say(channel, res);
-            break;
+            return client.say(channel, res);
         case "!deletecmd":
         case "!removecmd":
         case "!delcmd":
             res = await commands.delete_cc(info_object);
-            client.say(channel, res);
-            break;
+            return client.say(channel, res);
         case "!uptime":
             res = await commands.get_uptime(info_object);
-            client.say(channel, res);
-            break;
+            return client.say(channel, res);
         case "!title":
             res = await commands.get_title(info_object);
-            client.say(channel, res);
-            break;
-        case "!hl":
+            return client.say(channel, res);
+        // case "!hl":
         case "!ts":
             res = await commands.set_highlight(info_object);
-            client.say(channel, res);
-            break;
-        case "!hls":
+            return client.say(channel, res);
+        // case "!hls":
         case "!allts":
             res = await commands.get_highlights(info_object);
-            client.say(channel, res);
-            break;
-        case "!gethl":
-        case "!getts":
+            return client.say(channel, res);
+        // case "!gethl":
+        case "!grabts":
             res = await commands.get_target_highlight(info_object);
-            client.say(channel, res);
-            break;
-        case "!dhl":
+            return client.say(channel, res);
+        // case "!dhl":
         case "!dts":
             res = await commands.delete_highlight(info_object);
-            client.say(channel, res);
-            break;
+            return client.say(channel, res);
         case "!followage":
             res = await commands.get_followage(info_object);
-            client.say(channel, res);
-            break;
+            return client.say(channel, res);
         case "!slots":
             res = await commands.slots(info_object);
-            client.say(channel, res);
-            break;
+            return client.say(channel, res);
         case "!addperm":
             res = await commands.add_permission(info_object);
-            client.say(channel, res);
-            break;
+            return client.say(channel, res);
         case "!getperm":
             res = await commands.list_permission_string(info_object);
-            client.say(channel, res);
-            break;
+            return client.say(channel, res);
         case "!delperm":
             res = await commands.remove_permission(info_object);
-            client.say(channel, res);
-            break;
+            return client.say(channel, res);
         case "!time":
-            // client.say(channel, "Doesnt work yet");
-            break;
+            return; // client.say(channel, "Doesnt work yet");
         case "!connect":
         case "!join":
             res = await commands.join_channel(info_object, client);
-            client.say(channel, res);
-            break;
+            return client.say(channel, res);
         case "!disconnect":
         case "!part":
         case "!leave":
             res = await commands.leave_channel(info_object, client);
-            client.say(channel, res);
-            break;
+            return client.say(channel, res);
         case "!help":
             res = await commands.help_command(info_object);
-            client.say(channel, res);
-            break;
+            return client.say(channel, res);
         case "!setspeedrunner":
             res = await commands.set_username(info_object);
-            client.say(channel, res);
-            break;
+            return client.say(channel, res);
         default:
             // console.log('DEFAULT');
             break;
