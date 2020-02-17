@@ -30,6 +30,7 @@
         "!leave",
         "!help",
         "!ttwr",
-        "!ttpb"
+        "!ttpb",
+        "!setspeedrunner"
     ]
 }

@@ -729,6 +729,8 @@ const help_command = async info_object => {
             return "Use !ttwr [track] [vehicle] [?laps] [?shortcut] to get WR (laps & shortcut are optional). Only works with Diddy Kong Racing.";
         case "leave":
             return "Make me leave your channel. !part also works.";
+        case "setspeedrunner":
+            return "Use !setspeedrunner [?name] to set streamer's name. Don't use this if your twitch name is already the same as SRC name.";
         default:
     }
 };
