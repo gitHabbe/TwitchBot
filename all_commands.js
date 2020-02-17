@@ -49,8 +49,8 @@ const get_pb = async info_object => {
 
 const get_il_wr = async info_object => {
     let { split_msg } = info_object;
-    const game = await tg.get_game_id(info_object);
-    if (typeof game === "string") return "Game " + split_msg[1] + " does not exist.";
+    // const game = await tg.get_game_id(info_object);
+    // if (typeof game === "string") return "Game " + split_msg[1] + " does not exist.";
     const level_list = await fetching.fetch_game_levels(game.id);
     console.log("LOG: level_list", level_list.data.data);
     const level_list_names = level_list.data.data.map((level, index) => {
@@ -64,7 +64,7 @@ const get_il_wr = async info_object => {
         return { category: level_name, lb_uri: lb_uri.uri, index: index, name: level_name };
     });
     // console.log('level_list_names: ', level_list_names);
-    const fuse_hit = fuse.get_fuse_result(level_list_names, split_msg.slice(2).join(" "));
+    const fuse_hit = fuse.get_fuse_result(level_list_names, split_msg.slice(1).join(" "));
     const level_lb = await fetching.fetch_speedrun_uri(fuse_hit.lb_uri + "?top=1");
     const wr_time = util.millisecondsToString(level_lb.data.data.runs[0].run.times.primary_t);
     const speedrunner = await fetching.fetch_speedrun_uri(level_lb.data.data.runs[0].run.players[0].uri);
@@ -120,8 +120,8 @@ const get_il_pb = async info_object => {
         runner => runner.names.international.toLowerCase() === runner_msg.toLowerCase()
     );
 
-    const game = await tg.get_game_id(info_object);
-    if (typeof game === "string") return "Game " + split_msg[1] + " does not exist.";
+    // const game = await tg.get_game_id(info_object);
+    // if (typeof game === "string") return "Game " + split_msg[1] + " does not exist.";
     const level_list = await fetching.fetch_game_levels(game.id);
     const level_list_names = level_list.data.data.map((level, index) => {
         let level_name = level.name;
@@ -132,7 +132,7 @@ const get_il_pb = async info_object => {
         const lb_uri = level.links.find(link => link.rel === "leaderboard");
         return { category: level_name, lb_uri: lb_uri.uri, index: index, name: level_name };
     });
-    const fuse_hit = fuse.get_fuse_result(level_list_names, split_msg.slice(2).join(" "));
+    const fuse_hit = fuse.get_fuse_result(level_list_names, split_msg.slice(1).join(" "));
     console.log("fuse_hit: ", fuse_hit);
     const level_lb = await fetching.fetch_speedrun_uri(fuse_hit.lb_uri);
     const run = level_lb.data.data.runs.find(run => {
@@ -156,7 +156,7 @@ const get_tt_pb = async info_object => {
     } else {
         return "Invalid laps count: " + laps;
     }
-    if (shortcut === "shortcut") {
+    if (shortcut === "shortcut" || shortcut === "sc") {
         shortcut = true;
     } else {
         shortcut = false;

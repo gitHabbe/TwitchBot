@@ -34,7 +34,7 @@ const get_game_id = async info_object => {
             abbrev: is_gameDB.abbrev
         };
     } else {
-        channel = "tridenttail";
+        // channel = "tridenttail";
         console.log("LOG: channel", channel);
         const twitch_channel = await fetching.get_twitch_channel(channel);
         const twitch_game = await fetching.get_twitch_game(twitch_channel.data.data[0].game_id);
