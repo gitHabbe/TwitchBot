@@ -675,9 +675,10 @@ const help_command = async info_object => {
 
     if (!split_msg[1]) {
         return (
-            'Use "!help [!Option]". Options: ' +
+            'Use "!help command" on any of: ' +
             "enable, disable, newcmd, delcmd, hl, hls, gethl, " +
-            "dhl, wr, pb, ilwr, ilpb, addperm, getperm, " +
+            "dhl, wr, pb, ilwr, ilpb, ttwr, ttpb, " +
+            "addperm, getperm, setspeedrunner, " +
             "title, uptime, leave"
         );
     }
@@ -700,26 +701,32 @@ const help_command = async info_object => {
             return "Use !dhl [highlight-name] to delete a highlight.";
         case "addperm":
             return "Use !addperm [name] to give a person permission to manage highlights/customcommands/permissions.";
+        case "delperm":
+            return "Use !delperm [name] to remove a person's permission to manage highlights/customcommands/permissions.";
         case "getperm":
             return "Use !getperm to list all people with extra permission.";
         case "title":
             return "Displays your current title.";
         case "uptime":
-            return "Shows how long your stream has been live.";
+            return "Shows how long streamer has been live.";
         case "wr":
             return (
                 "Use !wr [game] [category] to get world record time. Leave [category] empty to get category from title. " +
                 "Leave [game] empty to get game from current game being played."
             );
-        case "ilwr":
-            return "Use !ilwr [level] [vehicle] to get world record time. Currently only works for Diddy Kong Racing.";
         case "pb":
             return (
-                "Use !pb [player-name] [game] [category] to get personal best time. Leave [category] empty to get category from title. " +
+                "Use !pb [player] [game] [category] to get personal best time. Leave [category] empty to get category from title. " +
                 "Leave [game] empty to get game from current game being played."
             );
         case "ilpb":
-            return "Use !ilpb [player] [level] [vehicle] to get personal best time. Currently only works for Diddy Kong Racing.";
+            return "Use !ilpb [player] [track] [vehicle] to get PB. Only works with Diddy Kong Racing.";
+        case "ilwr":
+            return "Use !ilwr [track] [vehicle] to get world record time. Only works with Diddy Kong Racing.";
+        case "ttpb":
+            return "Use !ttpb [player] [track] [vehicle] [?laps] [?shortcut] to get PB (laps & shortcut are optional). Only works with Diddy Kong Racing.";
+        case "ttwr":
+            return "Use !ttwr [track] [vehicle] [?laps] [?shortcut] to get WR (laps & shortcut are optional). Only works with Diddy Kong Racing.";
         case "leave":
             return "Make me leave your channel. !part also works.";
         default:
