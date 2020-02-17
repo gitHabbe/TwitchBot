@@ -49,8 +49,11 @@ const get_pb = async info_object => {
 
 const get_il_wr = async info_object => {
     let { split_msg } = info_object;
-    // const game = await tg.get_game_id(info_object);
-    // if (typeof game === "string") return "Game " + split_msg[1] + " does not exist.";
+    info_object.split_msg.shift();
+    info_object.split_msg = ["!ilwr", "dkr", ...info_object.split_msg];
+    console.log("LOG: info_object.split_msg", info_object.split_msg);
+    const game = await tg.get_game_id(info_object);
+    if (typeof game === "string") return "Game " + split_msg[1] + " does not exist.";
     const level_list = await fetching.fetch_game_levels(game.id);
     console.log("LOG: level_list", level_list.data.data);
     const level_list_names = level_list.data.data.map((level, index) => {
@@ -113,15 +116,16 @@ const get_tt_wr = async info_object => {
 
 const get_il_pb = async info_object => {
     let { split_msg } = info_object;
-    runner_msg = split_msg[1];
-    info_object.split_msg.splice(1, 1);
+    let runner_msg = split_msg[1];
+    // info_object.split_msg.splice(1, 1);
+    info_object.split_msg[1] = "dkr";
     let speedrunner_list = await fetching.get_speedrunner(runner_msg);
     speedrunner = speedrunner_list.data.data.find(
         runner => runner.names.international.toLowerCase() === runner_msg.toLowerCase()
     );
 
-    // const game = await tg.get_game_id(info_object);
-    // if (typeof game === "string") return "Game " + split_msg[1] + " does not exist.";
+    const game = await tg.get_game_id(info_object);
+    if (typeof game === "string") return "Game " + split_msg[1] + " does not exist.";
     const level_list = await fetching.fetch_game_levels(game.id);
     const level_list_names = level_list.data.data.map((level, index) => {
         let level_name = level.name;
