@@ -312,7 +312,7 @@ const set_highlight = async info_object => {
         })
         .write();
 
-    return `Timestamp created: ${ts_name}`;
+    return `Timestamp created: ${ts_name}. Use !grabts ${ts_name} if you want to watch it.`;
 };
 
 const get_highlights = async info_object => {

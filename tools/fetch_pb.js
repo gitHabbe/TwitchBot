@@ -3,11 +3,10 @@ const fetching = require("./fetching.js");
 
 async function fetch_pb(info_object) {
     let { game_id, category_id, category, runner } = info_object;
+
     let speedrunner = await fetching.get_speedrunner(runner);
-    console.log("LOG: functionfetch_pb -> speedrunner.data.data", speedrunner.data.data.length);
-    speedrunner = speedrunner.data.data.find(
-        srunner => srunner.names.international.toLowerCase() === runner.toLowerCase()
-    );
+    runner = runner.toLowerCase();
+    speedrunner = speedrunner.data.data.find(runr => runr.names.international.toLowerCase() === runner);
 
     const pbs_uri = util.get_game_link(speedrunner, "personal-bests");
     const speedrunners_pbs = await fetching.fetch_speedrun_uri(pbs_uri);
