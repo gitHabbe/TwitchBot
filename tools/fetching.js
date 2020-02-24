@@ -10,8 +10,15 @@ const fetch_game_levels = id => {
 };
 
 const get_speedrunner = name => {
-    // return axios.get(encodeURI(`https://www.speedrun.com/api/v1/users?name=${name}`));
+    return axios.get(encodeURI(`https://www.speedrun.com/api/v1/users?name=${name}`));
+};
+
+const get_speedrunner_lookup = name => {
     return axios.get(encodeURI(`https://www.speedrun.com/api/v1/users?lookup=${name}`));
+};
+
+const get_speedrunner_twitch = name => {
+    return axios.get(encodeURI(`https://www.speedrun.com/api/v1/users?twitch=${name}`));
 };
 
 const get_twitch_channel = channel => {
@@ -74,5 +81,7 @@ module.exports = {
     get_leaderboard,
     get_speedrunner,
     fetch_game_levels,
-    get_dkr64_track
+    get_dkr64_track,
+    get_speedrunner_twitch,
+    get_speedrunner_lookup
 };

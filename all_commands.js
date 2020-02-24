@@ -26,20 +26,14 @@ const get_wr = async info_object => {
 const get_pb = async info_object => {
     let { channel, split_msg } = info_object;
     if (split_msg.length === 1) {
-        const adapter = new FileSync("./private/database.json");
-        const db = low(adapter);
-        const userDB = db.get("users").find({ name: channel });
-        info_object.runner = channel;
-        if (userDB.has("settings.srcName").value()) {
-            info_object.runner = userDB.get("settings.srcName").value();
-        }
+        info_object.runner = channel.toLowerCase();
     } else {
-        info_object.runner = info_object.split_msg[1];
+        info_object.runner = info_object.split_msg[1].toLowerCase();
         info_object.split_msg.splice(1, 1);
     }
-    console.log("LOG: info_object.runner", info_object.runner);
+    console.time("1");
     const { game_id, category_id, category } = await tg.set_game_and_category(info_object);
-    console.log("LOG: game_id, category_id, category", game_id, category_id, category);
+    console.timeEnd("1");
     info_object.game_id = game_id;
     info_object.category_id = category_id;
     info_object.category = category;
@@ -89,7 +83,7 @@ const get_tt_wr = async info_object => {
     } else {
         return "Invalid laps count: " + laps;
     }
-    if (shortcut === "shortcut") {
+    if (shortcut === "shortcut" || shortcut === "sc") {
         shortcut = true;
     } else {
         shortcut = false;
@@ -174,8 +168,11 @@ const get_tt_pb = async info_object => {
     const isRunner = track.data.times.find(run => run.username.toLowerCase() === runner.toLowerCase());
     if (!isRunner) return `No run for ${runner} was found on ${prettyTrack} (${vehicle_msg})`;
     const times = util.secondsToString3(isRunner.time_value);
+    const days_ago = Math.floor((new Date() - new Date(isRunner.tstamp)) / 86400000);
+    let res = isRunner.username + "'s " + prettyTrack + ": " + times;
+    res += " - Rank: " + isRunner.ranking + " » " + days_ago + " days ago.";
 
-    return isRunner.username + "'s " + prettyTrack + ": " + times + " - Rank: " + isRunner.ranking;
+    return res;
 };
 
 const new_cc = async info_object => {
