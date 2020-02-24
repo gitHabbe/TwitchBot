@@ -13,7 +13,7 @@ client.on("connected", (address, port) => {
     console.log(`CONNECTED: ${address}:${port}`);
     const adapter = new FileSync("./private/database.json");
     const db = low(adapter);
-    db.defaults({ games: [], users: [] }).write();
+    db.defaults({ games: [], users: [], runners: [] }).write();
 });
 
 // client.on("join", (channel, username, self) => {
