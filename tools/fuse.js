@@ -29,7 +29,6 @@ const get_fuse_result2 = (category_list, search_term) => {
         tokenize: true,
         maxPatternLength: 200,
         minMatchCharLength: 1
-        // keys: ["name"]
     };
     var fuse = new Fuse(category_list, options);
     return fuse.search(term)[0];

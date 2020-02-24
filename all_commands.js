@@ -31,9 +31,7 @@ const get_pb = async info_object => {
         info_object.runner = info_object.split_msg[1].toLowerCase();
         info_object.split_msg.splice(1, 1);
     }
-    console.time("1");
     const { game_id, category_id, category } = await tg.set_game_and_category(info_object);
-    console.timeEnd("1");
     info_object.game_id = game_id;
     info_object.category_id = category_id;
     info_object.category = category;
