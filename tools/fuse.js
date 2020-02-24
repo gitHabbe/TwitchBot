@@ -3,13 +3,14 @@ const Fuse = require("fuse.js");
 const get_fuse_result = (category_list, search_term) => {
     let term = search_term;
     category_list.forEach(category => {
-        let test = category.name
+        let isAbbrev = category.name
             .split(" ")
             .map(word => word.charAt(0))
             .join("")
             .toLowerCase();
-        if (test === search_term.toLowerCase()) term = category.name;
+        if (isAbbrev === search_term.toLowerCase()) term = category.name;
     });
+    if (search_term.toLowerCase().includes("hundo")) term = "100%";
     const options = {
         shouldSort: true,
         tokenize: true,
