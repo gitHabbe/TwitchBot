@@ -1,112 +1,59 @@
-const low = require("lowdb");
-const FileSync = require("lowdb/adapters/FileSync");
 const fetching = require("./fetching.js");
 const fuse = require("./fuse.js");
 const util = require("./util.js");
+const d = require("./db.js");
 
 const get_game_id = async info_object => {
     let { channel, userstate, split_msg } = info_object;
+    let is_gameDB;
     const msg_game = split_msg.length > 1 && split_msg[1];
-    const adapter = new FileSync("./private/database.json");
-    const db = low(adapter);
-    const gameDB = db.get("games");
-    if (msg_game) {
-        const is_gameDB = gameDB.find({ abbrev: msg_game }).value();
-        if (!is_gameDB) {
-            let gameData = await fetching.get_speedrungame_by_abbreviation(msg_game);
-            gameData = gameData.data.data;
-            if (gameData.length === 0) return msg_game + " is not a valid game.";
-            const game_obj = {
-                id: gameData[0].id,
-                abbrev: gameData[0].abbreviation,
-                categories: [],
-                added_by: userstate.username,
-                date: new Date()
-            };
-            db.get("games")
-                .push(game_obj)
-                .write();
-
-            return game_obj;
-        }
-        return {
-            id: is_gameDB.id,
-            abbrev: is_gameDB.abbrev
-        };
-    } else {
+    if (!msg_game) {
         const twitch_channel = await fetching.get_twitch_channel(channel);
+        // const twitch_channel = await fetching.get_twitch_channel("Taggo");
+        info_object.title = twitch_channel.data.data[0].title;
         const twitch_game = await fetching.get_twitch_game(twitch_channel.data.data[0].game_id);
         const speedrun_game = await fetching.get_speedrungame_by_name(twitch_game.data.data[0].name);
-        const is_gameDB = gameDB.find({ id: speedrun_game.data.data[0].id }).value();
-        const game_obj = {
-            id: speedrun_game.data.data[0].id,
-            abbrev: speedrun_game.data.data[0].abbreviation,
-            categories: [],
-            added_by: userstate.username,
-            date: new Date()
-        };
-        if (!is_gameDB) {
-            db.get("games")
-                .push(game_obj)
-                .write();
+        if (speedrun_game.data.data.length === 0) {
+            info_object.error = `${twitch_game.data.data[0].name} is not a speedrun game.`;
         }
-        return game_obj;
+        is_gameDB = d.getGameById(speedrun_game.data.data[0].id);
+        if (!is_gameDB) {
+            const category_uri = speedrun_game.data.data[0].links.find(link => link.rel === "categories");
+            let category_list = await fetching.fetch_speedrun_uri(category_uri.uri);
+            category_list = category_list.data.data.filter(cate => {
+                return cate.links.find(link => {
+                    return link.rel === "leaderboard";
+                });
+            });
+            d.saveGame(speedrun_game, category_list, userstate);
+        }
+        is_gameDB = d.getGameById(speedrun_game.data.data[0].id);
+    } else {
+        is_gameDB = d.getGameByAbbrev(msg_game);
     }
+    info_object.game = is_gameDB;
+    info_object.game_id = is_gameDB.id;
+    info_object.abbrev = is_gameDB.abbrev;
 };
 
 const get_category = async info_object => {
-    let { channel, split_msg } = info_object;
-    const gameData = await get_game_id(info_object);
-    if (typeof gameData === "string") return gameData;
-    const { id, abbrev } = gameData;
+    await get_game_id(info_object);
+    let { split_msg, title, game } = info_object;
     let msg_category = split_msg.length > 2 && split_msg.slice(2);
-
-    const adapter = new FileSync("./private/database.json");
-    const db = low(adapter);
-    const gameDB = db.get("games").find({ abbrev });
-    const categoriesDB = gameDB.get("categories").value();
-    if (categoriesDB.length === 0) {
-        // console.log("No category list found, fettching by id: ", id);
-        const speedrun_game = await fetching.get_speedrungame_by_id(id);
-        const category_uri = util.get_game_link(speedrun_game.data.data, "categories");
-        const category_list_fetch = await fetching.fetch_speedrun_uri(category_uri);
-        category_list_fetch.data.data.forEach(category_obj => {
-            let { id, name, links } = category_obj;
-            const hasLeaderboard = links.find(link => link.rel === "leaderboard");
-            // const hasCategory = categoriesDB.findIndex(category => category.id === category_obj.id) === -1;
-            if (!hasLeaderboard) return;
-            gameDB
-                .get("categories")
-                .push({ id, name })
-                .write();
-        });
-    }
     let fuse_hit;
-    let category_list = categoriesDB;
-    if (msg_category) {
-        msg_category = split_msg.slice(2).join(" ");
-        fuse_hit = fuse.get_fuse_result(category_list, msg_category);
+    if (!msg_category) {
+        fuse_hit = fuse.get_fuse_result(game.categories, title);
     } else {
-        category_list = categoriesDB;
-        const twitch_channel = await fetching.get_twitch_channel(channel);
-        fuse_hit = fuse.get_fuse_result(category_list, twitch_channel.data.data[0].title);
+        msg_category = msg_category.join(" ");
+        console.log("LOG: msg_category", msg_category);
+        fuse_hit = fuse.get_fuse_result(game.categories, msg_category);
     }
 
-    return {
-        category_id: fuse_hit.id,
-        game_id: id,
-        category: fuse_hit.name
-    };
-};
-
-const set_game_and_category = async info_object => {
-    const game_id_and_category = await get_category(info_object);
-
-    return game_id_and_category;
+    info_object.category_id = fuse_hit.id;
+    info_object.category = fuse_hit.name;
 };
 
 module.exports = {
     get_game_id,
-    get_category,
-    set_game_and_category
+    get_category
 };

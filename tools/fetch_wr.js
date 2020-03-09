@@ -8,7 +8,7 @@ async function fetch_wr(info_object) {
     const wr_time = util.secondsToString2(speedrun.data.data.runs[0].run.times.primary_t);
     const days_ago = Math.floor((new Date() - new Date(speedrun.data.data.runs[0].run.date)) / 86400000);
     return `${category} WR: ${wr_time} by ${speedrunner.data.data.names.international} \
-${days_ago} days ago`;
+ - ${days_ago} days ago`;
 }
 
 module.exports = {

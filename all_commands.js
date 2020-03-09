@@ -13,12 +13,7 @@ const pb = require("./tools/fetch_pb.js");
 const dkr64_tracks = require("./dkr64_tracks");
 
 const get_wr = async info_object => {
-    const gameData = await tg.set_game_and_category(info_object);
-    if (typeof gameData === "string") return gameData;
-    const { game_id, category_id, category } = gameData;
-    info_object.game_id = game_id;
-    info_object.category_id = category_id;
-    info_object.category = category;
+    await tg.get_category(info_object);
 
     return wr.fetch_wr(info_object);
 };
@@ -31,10 +26,7 @@ const get_pb = async info_object => {
         info_object.runner = info_object.split_msg[1].toLowerCase();
         info_object.split_msg.splice(1, 1);
     }
-    const { game_id, category_id, category } = await tg.set_game_and_category(info_object);
-    info_object.game_id = game_id;
-    info_object.category_id = category_id;
-    info_object.category = category;
+    await tg.get_category(info_object);
 
     return pb.fetch_pb(info_object);
 };
@@ -43,9 +35,9 @@ const get_il_wr = async info_object => {
     info_object.split_msg.shift();
     info_object.split_msg = ["!ilwr", "dkr", ...info_object.split_msg];
     let { split_msg } = info_object;
-    const game = await tg.get_game_id(info_object);
+    await tg.get_game_id(info_object);
     if (typeof game === "string") return "Game " + split_msg[1] + " does not exist.";
-    const level_list = await fetching.fetch_game_levels(game.id);
+    const level_list = await fetching.fetch_game_levels(info_object.game_id);
     const level_list_names = level_list.data.data.map((level, index) => {
         let level_name = level.name;
         if (level_name.indexOf("(") > -1) {
@@ -64,6 +56,38 @@ const get_il_wr = async info_object => {
     return `${level_list.data.data[fuse_hit.index].name} WR: ${wr_time} \
 by ${speedrunner.data.data.names.international} \
 ${days_ago} days ago`;
+};
+
+const get_il_pb = async info_object => {
+    let { split_msg } = info_object;
+    let runner_msg = split_msg[1];
+    // info_object.split_msg.splice(1, 1);
+    info_object.split_msg[1] = "dkr";
+    let speedrunner_list = await fetching.get_speedrunner(runner_msg);
+    speedrunner = speedrunner_list.data.data.find(
+        runner => runner.names.international.toLowerCase() === runner_msg.toLowerCase()
+    );
+
+    await tg.get_game_id(info_object);
+    if (typeof game === "string") return "Game " + split_msg[1] + " does not exist.";
+    const level_list = await fetching.fetch_game_levels(info_object.game_id);
+    const level_list_names = level_list.data.data.map((level, index) => {
+        let level_name = level.name;
+        if (level_name.indexOf("(") > -1) {
+            level_name = level_name.replace("(", "");
+            level_name = level_name.replace(")", "");
+        }
+        const lb_uri = level.links.find(link => link.rel === "leaderboard");
+        return { category: level_name, lb_uri: lb_uri.uri, index: index, name: level_name };
+    });
+    const fuse_hit = fuse.get_fuse_result(level_list_names, split_msg.slice(1).join(" "));
+    console.log("fuse_hit: ", fuse_hit);
+    const level_lb = await fetching.fetch_speedrun_uri(fuse_hit.lb_uri);
+    const run = level_lb.data.data.runs.find(run => {
+        return run.run.players[0].id === speedrunner.id;
+    });
+    const player_time = util.millisecondsToString(run.run.times.primary_t);
+    return `${speedrunner.names.international}'s ${fuse_hit.category} PB is ${player_time}. Place: ${run.place}`;
 };
 
 const get_tt_wr = async info_object => {
@@ -90,7 +114,6 @@ const get_tt_wr = async info_object => {
     const fuseTrack = dkr64_tracks[arrNum];
     const track = await fetching.get_dkr64_track(fuseTrack, vehicle_msg, laps, 1, shortcut);
     const prettyTrack = dkr64_tracks[arrNum].split("-").join(" ");
-    console.log("LOG: fuseTrack, vehicle_msg, laps, 1, shortcut", fuseTrack, vehicle_msg, laps, 1, shortcut);
     if (track.data.error === "Invalid field value: 'vehicle'") {
         return `${vehicle_msg} is not a valid vehicle`;
     }
@@ -102,46 +125,12 @@ const get_tt_wr = async info_object => {
     return track.data.times[0].username + "'s " + prettyTrack + ": " + times;
 };
 
-const get_il_pb = async info_object => {
-    let { split_msg } = info_object;
-    let runner_msg = split_msg[1];
-    // info_object.split_msg.splice(1, 1);
-    info_object.split_msg[1] = "dkr";
-    let speedrunner_list = await fetching.get_speedrunner(runner_msg);
-    speedrunner = speedrunner_list.data.data.find(
-        runner => runner.names.international.toLowerCase() === runner_msg.toLowerCase()
-    );
-
-    const game = await tg.get_game_id(info_object);
-    if (typeof game === "string") return "Game " + split_msg[1] + " does not exist.";
-    const level_list = await fetching.fetch_game_levels(game.id);
-    const level_list_names = level_list.data.data.map((level, index) => {
-        let level_name = level.name;
-        if (level_name.indexOf("(") > -1) {
-            level_name = level_name.replace("(", "");
-            level_name = level_name.replace(")", "");
-        }
-        const lb_uri = level.links.find(link => link.rel === "leaderboard");
-        return { category: level_name, lb_uri: lb_uri.uri, index: index, name: level_name };
-    });
-    const fuse_hit = fuse.get_fuse_result(level_list_names, split_msg.slice(1).join(" "));
-    console.log("fuse_hit: ", fuse_hit);
-    const level_lb = await fetching.fetch_speedrun_uri(fuse_hit.lb_uri);
-    const run = level_lb.data.data.runs.find(run => {
-        return run.run.players[0].id === speedrunner.id;
-    });
-    const player_time = util.millisecondsToString(run.run.times.primary_t);
-    return `${speedrunner.names.international}'s ${fuse_hit.category} PB is ${player_time}. Place: ${run.place}`;
-};
-
 const get_tt_pb = async info_object => {
     let { split_msg } = info_object;
     let [cmd, runner, track_msg, vehicle_msg, laps = 3, shortcut = false] = split_msg;
     if (!track_msg) return "No track specified.";
     if (!vehicle_msg) return "No vehicle specified.";
-    if (!parseInt(laps)) {
-        return `${laps} is not a valid laps count.`;
-    }
+    if (!parseInt(laps)) return `${laps} is not a valid laps count.`;
     laps = parseInt(laps);
     if (laps === 1 || laps === 3) {
         // PLACEHOLDER
@@ -165,10 +154,10 @@ const get_tt_pb = async info_object => {
     }
     const isRunner = track.data.times.find(run => run.username.toLowerCase() === runner.toLowerCase());
     if (!isRunner) return `No run for ${runner} was found on ${prettyTrack} (${vehicle_msg})`;
-    const times = util.secondsToString3(isRunner.time_value);
+    const time = util.secondsToString3(isRunner.time_value);
     const days_ago = Math.floor((new Date() - new Date(isRunner.tstamp)) / 86400000);
-    let res = isRunner.username + "'s " + prettyTrack + ": " + times;
-    res += " - Rank: " + isRunner.ranking + " » " + days_ago + " days ago.";
+    let res = isRunner.username + "'s " + prettyTrack + ": " + time;
+    res += " » #" + isRunner.ranking + " » " + days_ago + " days ago.";
 
     return res;
 };

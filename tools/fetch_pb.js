@@ -56,7 +56,7 @@ async function fetch_pb(info_object) {
     const pb_time = util.secondsToString2(target_run.run.times.primary_t);
     const days_ago = Math.floor((new Date() - new Date(target_run.run.date)) / 86400000);
 
-    return `${runner}'s ${category} PB: ${pb_time}, ${days_ago} days ago - place: ${target_run.place}`;
+    return `${runner}'s ${category} PB: ${pb_time} « ${days_ago} days ago » #${target_run.place}`;
 }
 
 module.exports = {

@@ -2,6 +2,7 @@ const Fuse = require("fuse.js");
 
 const get_fuse_result = (category_list, search_term) => {
     let term = search_term;
+    console.log("LOG: get_fuse_result -> search_term", search_term);
     category_list.forEach(category => {
         let isAbbrev = category.name
             .split(" ")
