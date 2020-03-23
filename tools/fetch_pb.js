@@ -4,13 +4,6 @@ const FileSync = require("lowdb/adapters/FileSync");
 const low = require("lowdb");
 const d = require("./db.js");
 
-const runner_to_db = (db, name, id) => {
-    console.log("test");
-    // db.get("runners")
-    //     .push({ name, id })
-    //     .write();
-};
-
 async function fetch_pb(info_object) {
     let { game_id, category_id, category, runner } = info_object;
     const adapter = new FileSync("./private/database.json");
