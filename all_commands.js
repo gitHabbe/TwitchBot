@@ -54,7 +54,7 @@ const get_il_wr = async info_object => {
     const days_ago = Math.floor((new Date() - new Date(level_lb.data.data.runs[0].run.date)) / 86400000);
 
     return `${level_list.data.data[fuse_hit.index].name} WR: ${wr_time} \
-by ${speedrunner.data.data.names.international} \
+by ${speedrunner.data.data.names.international} - \
 ${days_ago} days ago`;
 };
 
@@ -87,7 +87,8 @@ const get_il_pb = async info_object => {
         return run.run.players[0].id === speedrunner.id;
     });
     const player_time = util.millisecondsToString(run.run.times.primary_t);
-    return `${speedrunner.names.international}'s ${fuse_hit.category} PB is ${player_time}. Place: ${run.place}`;
+    const days_ago = Math.floor((new Date() - new Date(level_lb.data.data.runs[0].run.date)) / 86400000);
+    return `${speedrunner.names.international}'s ${fuse_hit.category} PB is ${player_time} - #${run.place} - ${days_ago} days ago`;
 };
 
 const get_tt_wr = async info_object => {
@@ -120,9 +121,10 @@ const get_tt_wr = async info_object => {
     if (track.data.times.length === 0) {
         return `${prettyTrack} and ${vehicle_msg} is not a valid combination.`;
     }
+    console.log("track.data:", track.data);
     const times = util.secondsToString3(track.data.times[0].time_value);
-
-    return track.data.times[0].username + "'s " + prettyTrack + ": " + times;
+    const days_ago = Math.floor((new Date() - new Date(track.data.times[0].tstamp)) / 86400000);
+    return track.data.times[0].username + "'s " + prettyTrack + ": " + times + " - " + days_ago + " days ago";
 };
 
 const get_tt_pb = async info_object => {
@@ -157,7 +159,7 @@ const get_tt_pb = async info_object => {
     const time = util.secondsToString3(isRunner.time_value);
     const days_ago = Math.floor((new Date() - new Date(isRunner.tstamp)) / 86400000);
     let res = isRunner.username + "'s " + prettyTrack + ": " + time;
-    res += " » #" + isRunner.ranking + " » " + days_ago + " days ago.";
+    res += " - #" + isRunner.ranking + " - " + days_ago + " days ago.";
 
     return res;
 };
@@ -208,13 +210,13 @@ const check_cc = async info_object => {
     const db = low(adapter);
 
     const userDB = db.get("users").find({ name: channel });
-    const is_used = userDB
+    const is_cc = userDB
         .get("commands")
         .find({ name: split_msg[0] })
         .value();
-    if (!is_used) return "Command not found.";
+    if (!is_cc) return "Command not found.";
 
-    return is_used.content;
+    return is_cc.content;
 };
 
 const delete_cc = async info_object => {
@@ -732,7 +734,7 @@ const set_username = async info_object => {
     }
     userDB.set("settings.srcName", newSrcName).write();
 
-    return "Speedrun . com username set to:: " + newSrcName;
+    return "Speedrun . com username set to: " + newSrcName;
 };
 
 module.exports = {

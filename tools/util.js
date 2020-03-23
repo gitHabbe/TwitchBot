@@ -89,9 +89,7 @@ const secondsToString3 = time => {
 };
 
 const get_game_link = (object, rel_name) => {
-    // return object.links.find(link => link.rel === rel_name).uri;
     return object.links.find(link => {
-        // console.log(link.rel);
         return link.rel === rel_name;
     }).uri;
 };
