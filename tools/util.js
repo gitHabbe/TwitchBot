@@ -88,6 +88,26 @@ const secondsToString3 = time => {
     return str;
 };
 
+const formatYTViews = views => {
+    const viewsNum = parseInt(views);
+    let suffix;
+    let zeros;
+    if (viewsNum > Math.pow(10, 9)) {
+        suffix = "B";
+        zeros = 9;
+    } else if (viewsNum > Math.pow(10, 6)) {
+        suffix = "M";
+        zeros = 6;
+    } else if (viewsNum > Math.pow(10, 3)) {
+        suffix = "K";
+        zeros = 3;
+    } else {
+        suffix = "";
+        zeros = 0;
+    }
+    return (viewsNum / Math.pow(10, zeros)).toFixed(zeros ? 1 : 0) + suffix;
+};
+
 const get_game_link = (object, rel_name) => {
     return object.links.find(link => {
         return link.rel === rel_name;
@@ -110,5 +130,6 @@ module.exports = {
     secondsToString: secondsToString,
     secondsToString2: secondsToString2,
     millisecondsToString: millisecondsToString,
-    secondsToString3
+    secondsToString3,
+    formatYTViews
 };

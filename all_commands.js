@@ -407,8 +407,10 @@ const get_youtube_info = async (info_object, short = false) => {
     });
     grouped_dur = grouped_dur.filter(num => num !== undefined);
     grouped_dur = grouped_dur.join("").slice(0, -1);
+    const formatedViews = util.formatYTViews(viewCount);
+    console.log("LOG: get_youtube_info -> formatedViews", formatedViews);
 
-    return `[${grouped_dur}, ${viewCount} views, ${likePercent}% likes] ${title}`;
+    return `[${grouped_dur}, ${formatedViews} views, ${likePercent}% likes] ${title}`;
 };
 
 const get_tweet_info = async info_object => {
