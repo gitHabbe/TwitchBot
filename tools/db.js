@@ -69,6 +69,15 @@ cool.isRunnerLocal = (info_object, name) => {
     return false;
 };
 
+cool.getRunnerLocal = name => {
+    const adapter = new FileSync("./private/database.json");
+    const db = low(adapter);
+    return db
+        .get("runners")
+        .find({ name: name })
+        .value();
+};
+
 cool.runnerToDB = (name, id) => {
     const adapter = new FileSync("./private/database.json");
     const db = low(adapter);

@@ -124,7 +124,18 @@ const get_tt_wr = async info_object => {
     console.log("track.data:", track.data);
     const times = util.secondsToString3(track.data.times[0].time_value);
     const days_ago = Math.floor((new Date() - new Date(track.data.times[0].tstamp)) / 86400000);
-    return track.data.times[0].username + "'s " + prettyTrack + ": " + times + " - " + days_ago + " days ago";
+    return (
+        track.data.times[0].username +
+        "'s " +
+        prettyTrack +
+        " " +
+        laps.toString() +
+        "-lap: " +
+        times +
+        " - " +
+        days_ago +
+        " days ago"
+    );
 };
 
 const get_tt_pb = async info_object => {
@@ -333,7 +344,7 @@ const get_target_highlight = async info_object => {
 
     const timestamp = util.secondsToString(highlight_hit.timestamp - 100).replace(/\s/g, "");
 
-    return `${highlight_hit.hl_name}, ${highlight_hit.hl_url}?t=${timestamp}`;
+    return `${highlight_hit.hl_name}: ${highlight_hit.hl_url}?t=${timestamp}`;
 };
 
 const delete_highlight = async info_object => {
@@ -408,7 +419,6 @@ const get_youtube_info = async (info_object, short = false) => {
     grouped_dur = grouped_dur.filter(num => num !== undefined);
     grouped_dur = grouped_dur.join("").slice(0, -1);
     const formatedViews = util.formatYTViews(viewCount);
-    console.log("LOG: get_youtube_info -> formatedViews", formatedViews);
 
     return `[${grouped_dur}, ${formatedViews} views, ${likePercent}% likes] ${title}`;
 };

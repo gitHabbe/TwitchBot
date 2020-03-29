@@ -30,6 +30,22 @@ const get_game_id = async info_object => {
         is_gameDB = d.getGameById(speedrun_game.data.data[0].id);
     } else {
         is_gameDB = d.getGameByAbbrev(msg_game);
+        console.log("LOG: is_gameDB", is_gameDB);
+        if (!is_gameDB) {
+            const speedrun_game = await fetching.get_speedrungame_by_abbreviation(msg_game);
+            if (speedrun_game.data.data.length === 0) {
+                info_object.error = `${twitch_game.data.data[0].name} is not a speedrun game.`;
+            }
+            const category_uri = speedrun_game.data.data[0].links.find(link => link.rel === "categories");
+            let category_list = await fetching.fetch_speedrun_uri(category_uri.uri);
+            category_list = category_list.data.data.filter(cate => {
+                return cate.links.find(link => {
+                    return link.rel === "leaderboard";
+                });
+            });
+            d.saveGame(speedrun_game, category_list, userstate);
+        }
+        is_gameDB = d.getGameByAbbrev(msg_game);
     }
     info_object.game = is_gameDB;
     info_object.game_id = is_gameDB.id;
@@ -45,7 +61,6 @@ const get_category = async info_object => {
         fuse_hit = fuse.get_fuse_result(game.categories, title);
     } else {
         msg_category = msg_category.join(" ");
-        console.log("LOG: msg_category", msg_category);
         fuse_hit = fuse.get_fuse_result(game.categories, msg_category);
     }
 
