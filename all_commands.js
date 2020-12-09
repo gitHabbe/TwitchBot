@@ -753,11 +753,19 @@ const set_username = async info_object => {
 const get_pokemon = async info_object => {
     let { channel, userstate, split_msg } = info_object;
     const pokemonMsg = split_msg[1];
-    const pokemon = axios.get(`https://pokeapi.co/api/v2/${pokemonMsg}`);
+    console.log(`https://pokeapi.co/api/v2/pokemon/${pokemonMsg}`);
+    const pokemon = await axios.get(`https://pokeapi.co/api/v2/pokemon/${pokemonMsg}`);
     if (!pokemon) {
         return `Pokémon ${pokemonMsg} not found.`;
     }
-    console.log(pokemon.data.types); // [ array ]
+    if (pokemon.data.types.length == 0) {
+        return `No type found for ${pokemonMsg}`;
+    }
+    console.log(pokemon.data.types);
+    let types = pokemon.data.types.map(pType => pType.type.name.charAt(0).toUpperCase() + pType.type.name.slice(1));
+    types = types.join(" & ");
+    const pokemonName = pokemonMsg.charAt(0).toUpperCase() + pokemonMsg.slice(1)
+    return `${pokemonName}: ${types}`;
 }
 
 module.exports = {
@@ -790,5 +798,6 @@ module.exports = {
     help_command,
     set_username,
     get_tt_wr,
-    get_tt_pb
+    get_tt_pb,
+    get_pokemon
 };
