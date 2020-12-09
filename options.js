@@ -12,7 +12,7 @@ module.exports = {
     },
     identity: {
         username: process.env.TMI_USERNAME,
-        password: process.env.TMI_TOKEN
+        password: "oauth:" + process.env.TMI_PASSWORD
     },
     channels: channels
 };
