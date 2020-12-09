@@ -140,6 +140,7 @@ client.on('chat', async (channel, userstate, message, self) => {
             break;
     }
     if (split_msg[0].startsWith("!")) {
+        console.log('split_msg[0]: ', split_msg[0]);
         const adapter = new FileSync('./Private/database.json');
         const db = low(adapter);
         if (db.has("reserved-words").value()) {
@@ -147,7 +148,7 @@ client.on('chat', async (channel, userstate, message, self) => {
             if (!reserved_bool) {
                 commands.check_cc(info_object)
                 .then(res => { client.say(channel, res) })
-                .catch(err => { console.log(err) })
+                .catch(err => { client.say(channel, "Command not found") })
             }
             console.log('reserved_bool: ', reserved_bool);  
         }
