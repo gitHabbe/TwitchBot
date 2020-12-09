@@ -750,6 +750,16 @@ const set_username = async info_object => {
     return "Speedrun . com username set to: " + newSrcName;
 };
 
+const get_pokemon = async info_object => {
+    let { channel, userstate, split_msg } = info_object;
+    const pokemonMsg = split_msg[1];
+    const pokemon = axios.get(`https://pokeapi.co/api/v2/${pokemonMsg}`);
+    if (!pokemon) {
+        return `Pokémon ${pokemonMsg} not found.`;
+    }
+    console.log(pokemon.data.types); // [ array ]
+}
+
 module.exports = {
     get_wr,
     get_pb,

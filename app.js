@@ -9,7 +9,6 @@ var client = new tmi.client(options);
 
 client.connect();
 
-
 client.on("connected", (address, port) => {
     console.log(`CONNECTED: ${address}:${port}`);
     const adapter = new FileSync("./private/database.json");
@@ -126,6 +125,9 @@ client.on("chat", async (channel, userstate, message, self) => {
         case "!setspeedrunner":
             res = await commands.set_username(info_object);
             return client.say(channel, res);
+        // case "!pokemon":
+        //     res = await commands.set_username(info_object);
+        //     return client.say(channel, res);
         default:
             // console.log('DEFAULT');
             break;
