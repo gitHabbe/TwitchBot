@@ -1,26 +1,27 @@
 {
-  "name": "TwitchBot",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "scripts": {
-    "start": "node app.js",
-    "dev": "node_modules/.bin/nodemon app.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "dependencies": {
-    "axios": "^0.17.1",
-    "fuse.js": "^3.2.0",
-    "lowdb": "^1.0.0",
-    "tmi.js": "^1.2.1",
-    "twitter": "^1.7.1"
-  },
-  "devDependencies": {
-    "babel-core": "^6.26.0",
-    "dotenv": "^5.0.0",
-    "nodemon": "^1.17.5"
-  }
+    "name": "twitch-bot",
+    "version": "1.0.0",
+    "description": "",
+    "main": "index.js",
+    "scripts": {
+        "start": "node app.js",
+        "dev": "nodemon app.js",
+        "clearDB": "> private/database.json && echo '[\"habbe2\"]' > private/channels.json",
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "dependencies": {
+        "axios": "^0.17.1",
+        "fuse.js": "^3.2.0",
+        "lowdb": "^1.0.0",
+        "tmi.js": "^1.5.0",
+        "twitter": "^1.7.1"
+    },
+    "devDependencies": {
+        "babel-core": "^6.26.0",
+        "dotenv": "^5.0.0",
+        "nodemon": "^1.17.2"
+    }
 }
