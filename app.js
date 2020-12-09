@@ -9,6 +9,7 @@ var client = new tmi.client(options);
 
 client.connect();
 
+
 client.on("connected", (address, port) => {
     console.log(`CONNECTED: ${address}:${port}`);
     const adapter = new FileSync("./private/database.json");
