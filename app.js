@@ -7,6 +7,8 @@ const low = require("lowdb");
 
 var client = new tmi.client(options);
 
+console.log(process.env);
+
 client.connect();
 
 client.on("connected", (address, port) => {
