@@ -126,6 +126,7 @@ client.on("chat", async (channel, userstate, message, self) => {
         case "!setspeedrunner":
             res = await commands.set_username(info_object);
             return client.say(channel, res);
+        case "!pkmn":
         case "!pokemon":
             res = await commands.get_pokemon(info_object);
             return client.say(channel, res);
