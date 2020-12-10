@@ -753,7 +753,6 @@ const set_username = async info_object => {
 const get_pokemon = async info_object => {
     let { channel, userstate, split_msg } = info_object;
     const pokemonMsg = split_msg[1];
-    console.log(`https://pokeapi.co/api/v2/pokemon/${pokemonMsg}`);
     const pokemon = await axios.get(`https://pokeapi.co/api/v2/pokemon/${pokemonMsg}`);
     if (!pokemon) {
         return `Pokémon ${pokemonMsg} not found.`;
@@ -765,7 +764,7 @@ const get_pokemon = async info_object => {
     let types = pokemon.data.types.map(pType => pType.type.name.charAt(0).toUpperCase() + pType.type.name.slice(1));
     types = types.join(" & ");
     const pokemonName = pokemonMsg.charAt(0).toUpperCase() + pokemonMsg.slice(1)
-    return `${pokemonName}: ${types}`;
+    return `${pokemonName}: #${pokemon.data.id} - ${types}`;
 }
 
 module.exports = {
