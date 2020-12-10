@@ -752,8 +752,13 @@ const set_username = async info_object => {
 
 const get_pokemon = async info_object => {
     let { channel, userstate, split_msg } = info_object;
-    const pokemonMsg = split_msg[1];
-    const pokemon = await axios.get(`https://pokeapi.co/api/v2/pokemon/${pokemonMsg}`);
+    const pokemonMsg = split_msg[1].toLowerCase();
+    let pokemon;
+    try {
+        pokemon = await axios.get(`https://pokeapi.co/api/v2/pokemon/${pokemonMsg}`);
+    } catch (error) {
+        return `Pokémon ${pokemonMsg} not found.`;
+    }
     if (!pokemon) {
         return `Pokémon ${pokemonMsg} not found.`;
     }
