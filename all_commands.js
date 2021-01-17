@@ -751,25 +751,27 @@ const set_username = async info_object => {
 };
 
 const get_pokemon = async info_object => {
-    let { channel, userstate, split_msg } = info_object;
+    let { split_msg } = info_object;
     const pokemonMsg = split_msg[1].toLowerCase();
-    let pokemon;
+    let pokemon, stats;
+    const statNames = ["HP", "A", "D", "SA", "SD", "S"];
     try {
         pokemon = await axios.get(`https://pokeapi.co/api/v2/pokemon/${pokemonMsg}`);
+        // stats = pokemon.data.stats.map((stat, i) => `${statNames[i]}${stat.base_stat}`)
+        stats = pokemon.data.stats.map((stat, i) => `${stat.base_stat}`)
+        console.log(pokemon.data.stats);
     } catch (error) {
-        return `Pokémon ${pokemonMsg} not found.`;
-    }
-    if (!pokemon) {
         return `Pokémon ${pokemonMsg} not found.`;
     }
     if (pokemon.data.types.length == 0) {
         return `No type found for ${pokemonMsg}`;
     }
-    console.log(pokemon.data.types);
+    // console.log(pokemon.data.types);
     let types = pokemon.data.types.map(pType => pType.type.name.charAt(0).toUpperCase() + pType.type.name.slice(1));
     types = types.join(" & ");
+    stats = stats.join("-");
     const pokemonName = pokemonMsg.charAt(0).toUpperCase() + pokemonMsg.slice(1)
-    return `${pokemonName}: #${pokemon.data.id} - ${types}`;
+    return `${pokemonName} #${pokemon.data.id}: ${types} | ${stats}`;
 }
 
 module.exports = {
