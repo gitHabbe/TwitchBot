@@ -375,7 +375,6 @@ const get_followage = async info_object => {
     const streamer = await fetching.get_twitch_channel(channel);
     if (streamer.data.data.length === 0) return "Streamer offline. Can't find followage.";
     const streamer_id = streamer.data.data[0].user_id;
-
     let followage_info = await fetching.get_twitch_followage(streamer_id, userstate["user-id"]);
     followage_info = followage_info.data.data;
     if (followage_info.length === 0) return userstate.username + " is not following " + channel;

@@ -3,7 +3,7 @@ const channels = require("./private/channels.json");
 
 module.exports = {
     options: {
-        clientId: process.env.TMI_CLIENT,
+        clientId: process.env.TWITCH_CLIENT_ID,
         debug: true
     },
     connection: {
@@ -11,8 +11,8 @@ module.exports = {
         secure: true
     },
     identity: {
-        username: process.env.TMI_USERNAME,
-        password: "oauth:" + process.env.TMI_PASSWORD
+        username: process.env.TWITCH_USERNAME,
+        password: "oauth:" + process.env.TWITCH_OAUTH_PASSWORD
     },
-    channels: channels
+    channels
 };
