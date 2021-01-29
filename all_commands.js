@@ -394,19 +394,15 @@ const get_youtube_info = async (info_object, short = false) => {
         yt_link = split_msg.find(word => word.indexOf("https://www.youtube.com") !== -1);
     }
     const yt_id = re.exec(yt_link)[1];
-    console.log(yt_id);
     const yt_video = await axios.get(
         `https://www.googleapis.com/youtube/v3/videos?id=${yt_id}&key=${process.env.YT_API_KEY}&part=snippet,contentDetails,statistics,status`
     );
     const { viewCount, likeCount, dislikeCount } = yt_video.data.items[0].statistics;
     const likePercent = Math.round((parseInt(likeCount) / (parseInt(likeCount) + parseInt(dislikeCount))) * 100);
     const title = yt_video.data.items[0].snippet.title;
-    console.log('title: ', title);
     re = /[A-Z][A-Z](\d*H+)*(\d*M+)*(\d*S)/;
     const duration = yt_video.data.items[0].contentDetails.duration;
-    console.log(duration);
     let grouped_dur = re.exec(duration).slice(1, 4);
-    console.log(grouped_dur);
     grouped_dur = grouped_dur.map(time => {
         if (time) {
             if (time.length === 2) {
@@ -756,8 +752,8 @@ const get_pokemon = async info_object => {
     const statNames = ["HP", "A", "D", "SA", "SD", "S"];
     try {
         pokemon = await axios.get(`https://pokeapi.co/api/v2/pokemon/${pokemonMsg}`);
-        // stats = pokemon.data.stats.map((stat, i) => `${statNames[i]}${stat.base_stat}`)
-        stats = pokemon.data.stats.map((stat, i) => `${stat.base_stat}`)
+        stats = pokemon.data.stats.map((stat, i) => `${statNames[i]}꞉${stat.base_stat}`)
+        // stats = pokemon.data.stats.map((stat, i) => `${stat.base_stat}`)
         console.log(pokemon.data.stats);
     } catch (error) {
         return `Pokémon ${pokemonMsg} not found.`;
@@ -768,9 +764,9 @@ const get_pokemon = async info_object => {
     // console.log(pokemon.data.types);
     let types = pokemon.data.types.map(pType => pType.type.name.charAt(0).toUpperCase() + pType.type.name.slice(1));
     types = types.join(" & ");
-    stats = stats.join("-");
+    stats = stats.join(" ");
     const pokemonName = pokemonMsg.charAt(0).toUpperCase() + pokemonMsg.slice(1)
-    return `${pokemonName} #${pokemon.data.id}: ${types} | ${stats}`;
+    return `${pokemonName} #${pokemon.data.id} | ${types} | ${stats}`;
 }
 
 module.exports = {
