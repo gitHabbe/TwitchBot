@@ -644,7 +644,7 @@ const slots = async info_object => {
         .find(comp => comp === "slots");
     if (!isEnabled) return "!slots is not enabled";
 
-    var emotes = ["Kappa", "Jebaited", "MingLee", "DansGame", "PogChamp", "Kreygasm"];
+    var emotes = ["Kappa", "Jebaited", "MingLee", "DansGame", "OneHand", "Kreygasm"];
     var rolls = [];
     for (var i = 0; i < 3; i++) {
         var randomNr = Math.floor(Math.random() * emotes.length);
