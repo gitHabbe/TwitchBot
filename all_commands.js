@@ -225,7 +225,8 @@ const check_cc = async info_object => {
         .get("commands")
         .find({ name: split_msg[0] })
         .value();
-    if (!is_cc) return "Command not found.";
+    // if (!is_cc) return "Command not found.";
+    if (!is_cc) throw "CC not found."
 
     return is_cc.content;
 };

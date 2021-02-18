@@ -6,6 +6,7 @@
     "scripts": {
         "start": "node app.js",
         "dev": "nodemon app.js",
+        "pm2": "pm2 start app.js",
         "clearDB": "> private/database.json && echo '[\"habbe2\"]' > private/channels.json",
         "test": "echo \"Error: no test specified\" && exit 1"
     },
@@ -22,6 +23,7 @@
     "devDependencies": {
         "babel-core": "^6.26.0",
         "dotenv": "^5.0.0",
-        "nodemon": "^1.17.2"
+        "nodemon": "^1.17.2",
+        "pm2": "^4.5.4"
     }
 }
